@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Typeless — Auxiliary Pages Design</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        anthropic: {
+          dark: '#141413',
+          light: '#faf9f5',
+          'mid-gray': '#b0aea5',
+          'light-gray': '#e8e6dc',
+          orange: '#d97757',
+          'orange-light': '#f0c4b0',
+          blue: '#6a9bcc',
+          'blue-light': '#b8d4ec',
+          green: '#788c5d',
+          'green-light': '#c2d1aa',
+        },
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+      },
+      borderRadius: {
+        '2xl': '1rem',
+        '3xl': '1.5rem',
+        '4xl': '2rem',
+      },
+      boxShadow: {
+        'soft': '0 1px 3px rgba(20, 20, 19, 0.04), 0 1px 2px rgba(20, 20, 19, 0.02)',
+        'card': '0 4px 16px rgba(20, 20, 19, 0.06), 0 1px 4px rgba(20, 20, 19, 0.04)',
+        'elevated': '0 12px 40px rgba(20, 20, 19, 0.08), 0 4px 12px rgba(20, 20, 19, 0.04)',
+        'modal': '0 24px 80px rgba(20, 20, 19, 0.12), 0 8px 24px rgba(20, 20, 19, 0.08)',
+      },
+    },
+  },
+};
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #faf9f5; }
+
+  /* Page selector tabs */
+  .page-tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #b0aea5;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .page-tab:hover { color: #141413; background: #e8e6dc; }
+  .page-tab.active { color: #141413; background: #e8e6dc; font-weight: 600; }
+
+  .page-panel { display: none; }
+  .page-panel.active { display: block; }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #e8e6dc; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #b0aea5; }
+
+  /* Chart animation */
+  @keyframes bar-grow {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+  .chart-bar {
+    animation: bar-grow 0.6s ease-out forwards;
+    transform-origin: bottom;
+  }
+
+  /* Fade in */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in { animation: fade-in 0.3s ease-out; }
+
+  /* Accordion */
+  .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+  .faq-item.open .faq-answer { max-height: 200px; }
+  .faq-item.open .faq-icon { transform: rotate(180deg); }
+  .faq-icon { transition: transform 0.2s ease; }
+
+  /* Modal backdrop */
+  .modal-backdrop {
+    background: rgba(20, 20, 19, 0.4);
+    backdrop-filter: blur(4px);
+  }
+
+  /* Pulse ring animation for errors */
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+  .pulse-ring::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    animation: pulse-ring 1.5s ease-out infinite;
+  }
+
+  /* Toggle switch */
+  .toggle-track {
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+    background: #e8e6dc;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle-track.on { background: #788c5d; }
+  .toggle-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background: white;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .toggle-track.on .toggle-thumb { transform: translateX(18px); }
+</style>
+</head>
+
+<body class="min-h-screen text-anthropic-dark">
+
+<!-- Top navigation bar for page selection -->
+<div class="sticky top-0 z-50 bg-anthropic-light/80 backdrop-blur-xl border-b border-anthropic-light-gray">
+  <div class="max-w-7xl mx-auto px-6 py-3">
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 bg-anthropic-dark rounded-lg flex items-center justify-center">
+          <span class="text-white text-xs font-bold">T</span>
+        </div>
+        <span class="font-semibold text-sm text-anthropic-dark">Typeless</span>
+        <span class="text-xs text-anthropic-mid-gray ml-1">Auxiliary Pages Design</span>
+      </div>
+      <div class="text-xs text-anthropic-mid-gray">6 Pages &middot; Anthropic Design System</div>
+    </div>
+    <div class="flex gap-1 overflow-x-auto pb-1" id="page-tabs">
+      <div class="page-tab active" data-page="history">History Detail</div>
+      <div class="page-tab" data-page="integrations">App Integrations</div>
+      <div class="page-tab" data-page="analytics">Statistics</div>
+      <div class="page-tab" data-page="errors">Error States</div>
+      <div class="page-tab" data-page="update">Update Notice</div>
+      <div class="page-tab" data-page="help">Help & Support</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 1: HISTORY DETAIL PAGE -->
+<!-- ============================================================ -->
+<div class="page-panel active" id="page-history">
+  <div class="flex min-h-[calc(100vh-100px)]">
+    <!-- Sidebar -->
+    <aside class="w-60 flex-shrink-0 bg-anthropic-dark text-white flex flex-col">
+      <div class="p-5 flex items-center gap-2.5">
+        <div class="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
+          <span class="text-anthropic-dark text-xs font-bold">T</span>
+        </div>
+        <span class="font-semibold text-sm">Typeless</span>
+        <span class="ml-auto px-2 py-0.5 text-[10px] font-medium bg-anthropic-orange/20 text-anthropic-orange rounded-full">Pro</span>
+      </div>
+      <nav class="flex-1 px-3 space-y-0.5 mt-2">
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">home</span> Home
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white bg-white/10 rounded-xl" href="#">
+          <span class="material-icons-outlined text-[18px]">history</span> History
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">apps</span> Integrations
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">bar_chart</span> Analytics
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">settings</span> Settings
+        </a>
+      </nav>
+      <div class="p-4 mt-auto">
+        <div class="flex items-center gap-3 px-2 py-2">
+          <div class="w-8 h-8 rounded-full bg-anthropic-orange/30 flex items-center justify-center text-xs font-semibold text-anthropic-orange">JY</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-medium truncate">Jun Yu</div>
+            <div class="text-[10px] text-white/40 truncate">Pro Plan</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 bg-anthropic-light p-8 overflow-y-auto">
+      <!-- Breadcrumb -->
+      <div class="flex items-center gap-2 text-sm mb-6">
+        <a class="text-anthropic-mid-gray hover:text-anthropic-dark transition-colors" href="#">History</a>
+        <span class="material-icons-outlined text-[14px] text-anthropic-light-gray">chevron_right</span>
+        <span class="text-anthropic-dark font-medium">Meeting Notes — Feb 20, 2026</span>
+      </div>
+
+      <!-- Header -->
+      <div class="flex items-start justify-between mb-8">
+        <div>
+          <h1 class="text-2xl font-bold text-anthropic-dark mb-2">Meeting Notes — Product Review</h1>
+          <div class="flex items-center gap-4 text-sm text-anthropic-mid-gray">
+            <span class="flex items-center gap-1.5">
+              <span class="material-icons-outlined text-[16px]">schedule</span>
+              Feb 20, 2026 at 2:34 PM
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="material-icons-outlined text-[16px]">timer</span>
+              3 min 42 sec
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="material-icons-outlined text-[16px]">text_fields</span>
+              847 words
+            </span>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-anthropic-blue/10 text-anthropic-blue text-xs font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-anthropic-blue"></span>
+              Slack
+            </span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-anthropic-dark bg-white rounded-xl border border-anthropic-light-gray hover:border-anthropic-mid-gray shadow-soft transition-all">
+            <span class="material-icons-outlined text-[16px]">content_copy</span>
+            Copy
+          </button>
+          <button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-anthropic-dark bg-white rounded-xl border border-anthropic-light-gray hover:border-anthropic-mid-gray shadow-soft transition-all">
+            <span class="material-icons-outlined text-[16px]">file_download</span>
+            Export
+          </button>
+          <button class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-500 bg-white rounded-xl border border-anthropic-light-gray hover:border-red-200 hover:bg-red-50 shadow-soft transition-all" onclick="document.getElementById('delete-modal').classList.remove('hidden')">
+            <span class="material-icons-outlined text-[16px]">delete_outline</span>
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <!-- Content card -->
+      <div class="bg-white rounded-3xl border border-anthropic-light-gray shadow-soft p-8 mb-6">
+        <!-- Editable content -->
+        <div class="prose prose-sm max-w-none" contenteditable="false" id="dictation-content">
+          <p class="text-anthropic-dark leading-relaxed mb-4">We discussed the Q1 product roadmap during today's meeting. The key priorities are as follows:</p>
+          <p class="text-anthropic-dark leading-relaxed mb-4"><strong>1. Voice Recognition Improvements</strong><br/>The team agreed to prioritize multi-language support, starting with Mandarin Chinese and Japanese. Sarah will lead the integration with our new speech model, targeting a 15% improvement in accuracy for non-English languages.</p>
+          <p class="text-anthropic-dark leading-relaxed mb-4"><strong>2. App Integration Expansion</strong><br/>We're adding support for Linear and Notion in the next sprint. The API connectors are ready; we just need to finalize the UI for permission management. David mentioned that the OAuth flow should be standardized across all integrations.</p>
+          <p class="text-anthropic-dark leading-relaxed mb-4"><strong>3. Performance Optimization</strong><br/>Current transcription latency is around 1.8 seconds for a 30-second clip. The goal is to bring it down to under 1 second by switching to our streaming pipeline. This will require changes to both the recording buffer and the API client.</p>
+          <p class="text-anthropic-dark leading-relaxed"><strong>Action Items:</strong></p>
+          <ul class="text-anthropic-dark leading-relaxed space-y-1">
+            <li>Sarah: Finalize multi-language model integration by Feb 28</li>
+            <li>David: Standardize OAuth flow documentation</li>
+            <li>Jun: Benchmark streaming pipeline performance</li>
+            <li>Next review: March 6, 2026</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Edit bar -->
+      <div class="flex items-center justify-between bg-white rounded-2xl border border-anthropic-light-gray shadow-soft px-6 py-3">
+        <div class="flex items-center gap-3 text-sm text-anthropic-mid-gray">
+          <span class="material-icons-outlined text-[16px]">info</span>
+          Last edited 2 hours ago
+        </div>
+        <button class="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-anthropic-dark rounded-xl hover:bg-anthropic-dark/90 transition-colors" onclick="toggleEdit()">
+          <span class="material-icons-outlined text-[16px]" id="edit-icon">edit</span>
+          <span id="edit-label">Edit</span>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Delete confirmation modal -->
+  <div class="hidden fixed inset-0 z-50 flex items-center justify-center modal-backdrop" id="delete-modal">
+    <div class="bg-white rounded-3xl shadow-modal p-8 max-w-md w-full mx-4 fade-in">
+      <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-red-50 mb-5 mx-auto">
+        <span class="material-icons-outlined text-red-500 text-2xl">delete_outline</span>
+      </div>
+      <h3 class="text-lg font-bold text-center text-anthropic-dark mb-2">Delete this dictation?</h3>
+      <p class="text-sm text-center text-anthropic-mid-gray mb-8 leading-relaxed">This action cannot be undone. The dictation content and all associated metadata will be permanently removed.</p>
+      <div class="flex gap-3">
+        <button class="flex-1 px-5 py-2.5 text-sm font-medium text-anthropic-dark bg-anthropic-light-gray/50 rounded-xl hover:bg-anthropic-light-gray transition-colors" onclick="document.getElementById('delete-modal').classList.add('hidden')">Cancel</button>
+        <button class="flex-1 px-5 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- PAGE 2: APP INTEGRATIONS MANAGEMENT -->
+<!-- ============================================================ -->
+<div class="page-panel" id="page-integrations">
+  <div class="flex min-h-[calc(100vh-100px)]">
+    <!-- Sidebar (same structure) -->
+    <aside class="w-60 flex-shrink-0 bg-anthropic-dark text-white flex flex-col">
+      <div class="p-5 flex items-center gap-2.5">
+        <div class="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
+          <span class="text-anthropic-dark text-xs font-bold">T</span>
+        </div>
+        <span class="font-semibold text-sm">Typeless</span>
+        <span class="ml-auto px-2 py-0.5 text-[10px] font-medium bg-anthropic-orange/20 text-anthropic-orange rounded-full">Pro</span>
+      </div>
+      <nav class="flex-1 px-3 space-y-0.5 mt-2">
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">home</span> Home
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">history</span> History
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white bg-white/10 rounded-xl" href="#">
+          <span class="material-icons-outlined text-[18px]">apps</span> Integrations
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">bar_chart</span> Analytics
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">settings</span> Settings
+        </a>
+      </nav>
+      <div class="p-4 mt-auto">
+        <div class="flex items-center gap-3 px-2 py-2">
+          <div class="w-8 h-8 rounded-full bg-anthropic-orange/30 flex items-center justify-center text-xs font-semibold text-anthropic-orange">JY</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-medium truncate">Jun Yu</div>
+            <div class="text-[10px] text-white/40 truncate">Pro Plan</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 bg-anthropic-light p-8 overflow-y-auto">
+      <div class="max-w-5xl">
+        <div class="flex items-start justify-between mb-8">
+          <div>
+            <h1 class="text-2xl font-bold text-anthropic-dark mb-2">App Integrations</h1>
+            <p class="text-sm text-anthropic-mid-gray">Connect Typeless to your favorite apps for context-aware dictation.</p>
+          </div>
+          <button class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-anthropic-orange rounded-xl hover:bg-anthropic-orange/90 shadow-sm transition-all">
+            <span class="material-icons-outlined text-[16px]">add</span>
+            Connect New App
+          </button>
+        </div>
+
+        <!-- Connected apps -->
+        <h2 class="text-xs font-semibold uppercase tracking-wider text-anthropic-mid-gray mb-4">Connected Apps (5)</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+          <!-- Slack -->
+          <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-5 hover:shadow-card transition-shadow group">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#4A154B] flex items-center justify-center text-white font-bold text-lg">#</div>
+                <div>
+                  <h3 class="text-sm font-semibold text-anthropic-dark">Slack</h3>
+                  <p class="text-xs text-anthropic-mid-gray">Messaging</p>
+                </div>
+              </div>
+              <span class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-anthropic-green/10 text-anthropic-green text-[10px] font-medium">
+                <span class="w-1.5 h-1.5 rounded-full bg-anthropic-green"></span>
+                Active
+              </span>
+            </div>
+            <p class="text-xs text-anthropic-mid-gray mb-4 leading-relaxed">Casual tone optimized for channels and DMs. Auto-formatting for code snippets.</p>
+            <div class="flex items-center justify-between pt-3 border-t border-anthropic-light-gray">
+              <span class="text-[10px] text-anthropic-mid-gray">142 dictations</span>
+              <button class="text-xs font-medium text-anthropic-blue hover:underline opacity-0 group-hover:opacity-100 transition-opacity">Configure</button>
+            </div>
+          </div>
+
+          <!-- VS Code -->
+          <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-5 hover:shadow-card transition-shadow group">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#007ACC] flex items-center justify-center">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.5 0L24 4.5V19.5L17.5 24L1.5 12L6 8L17.5 14V10L6 2L1.5 6L0 4.5L6 0H6.5L17.5 0Z"/></svg>
+                </div>
+                <div>
+                  <h3 class="text-sm font-semibold text-anthropic-dark">VS Code</h3>
+                  <p class="text-xs text-anthropic-mid-gray">IDE</p>
+                </div>
+              </div>
+              <span class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-anthropic-green/10 text-anthropic-green text-[10px] font-medium">
+                <span class="w-1.5 h-1.5 rounded-full bg-anthropic-green"></span>
+                Active
+              </span>
+            </div>
+            <p class="text-xs text-anthropic-mid-gray mb-4 leading-relaxed">Code-aware dictation with syntax recognition. Supports variable naming conventions.</p>
+            <div class="flex items-center justify-between pt-3 border-t border-anthropic-light-gray">
+              <span class="text-[10px] text-anthropic-mid-gray">89 dictations</span>
+              <button class="text-xs font-medium text-anthropic-blue hover:underline opacity-0 group-hover:opacity-100 transition-opacity">Configure</button>
+            </div>
+          </div>
+
+          <!-- Gmail -->
+          <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-5 hover:shadow-card transition-shadow group">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-white border border-anthropic-light-gray flex items-center justify-center text-xl">✉️</div>
+                <div>
+                  <h3 class="text-sm font-semibold text-anthropic-dark">Gmail</h3>
+                  <p class="text-xs text-anthropic-mid-gray">Email</p>
+                </div>
+              </div>
+              <span class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-anthropic-green/10 text-anthropic-green text-[10px] font-medium">
+                <span class="w-1.5 h-1.5 rounded-full bg-anthropic-green"></span>
+                Active
+              </span>
+            </div>
+            <p class="text-xs text-anthropic-mid-gray mb-4 leading-relaxed">Professional email tone. Auto-greeting and sign-off formatting.</p>
+            <div class="flex items-center justify-between pt-3 border-t border-anthropic-light-gray">
+              <span class="text-[10px] text-anthropic-mid-gray">256 dictations</span>
+              <button class="text-xs font-medium text-anthropic-blue hover:underline opacity-0 group-hover:opacity-100 transition-opacity">Configure</button>
+            </div>
+          </div>
+
+          <!-- Notion -->
+          <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-5 hover:shadow-card transition-shadow group">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#191919] flex items-center justify-center text-white font-bold text-lg">N</div>
+                <div>
+                  <h3 class="text-sm font-semibold text-anthropic-dark">Notion</h3>
+                  <p class="text-xs text-anthropic-mid-gray">Docs & Wiki</p>
+                </div>
+              </div>
+              <span class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-anthropic-green/10 text-anthropic-green text-[10px] font-medium">
+                <span class="w-1.5 h-1.5 rounded-full bg-anthropic-green"></span>
+                Active
+              </span>
+            </div>
+            <p class="text-xs text-anthropic-mid-gray mb-4 leading-relaxed">Structured writing mode with auto-heading and bullet point detection.</p>
+            <div class="flex items-center justify-between pt-3 border-t border-anthropic-light-gray">
+              <span class="text-[10px] text-anthropic-mid-gray">73 dictations</span>
+              <button class="text-xs font-medium text-anthropic-blue hover:underline opacity-0 group-hover:opacity-100 transition-opacity">Configure</button>
+            </div>
+          </div>
+
+          <!-- ChatGPT -->
+          <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-5 hover:shadow-card transition-shadow group">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#10A37F] flex items-center justify-center text-white font-bold text-sm">AI</div>
+                <div>
+                  <h3 class="text-sm font-semibold text-anthropic-dark">ChatGPT</h3>
+                  <p class="text-xs text-anthropic-mid-gray">AI Chat</p>
+                </div>
+              </div>
+              <span class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-anthropic-orange/10 text-anthropic-orange text-[10px] font-medium">
+                <span class="w-1.5 h-1.5 rounded-full bg-anthropic-orange"></span>
+                Paused
+              </span>
+            </div>
+            <p class="text-xs text-anthropic-mid-gray mb-4 leading-relaxed">Natural prompt composition. Preserves conversational context for better responses.</p>
+            <div class="flex items-center justify-between pt-3 border-t border-anthropic-light-gray">
+              <span class="text-[10px] text-anthropic-mid-gray">31 dictations</span>
+              <button class="text-xs font-medium text-anthropic-blue hover:underline opacity-0 group-hover:opacity-100 transition-opacity">Configure</button>
+            </div>
+          </div>
+
+          <!-- Add new -->
+          <div class="rounded-2xl border-2 border-dashed border-anthropic-light-gray p-5 flex flex-col items-center justify-center gap-3 hover:border-anthropic-orange hover:bg-anthropic-orange/5 transition-all cursor-pointer group min-h-[180px]">
+            <div class="w-10 h-10 rounded-xl bg-anthropic-light-gray/50 flex items-center justify-center group-hover:bg-anthropic-orange/10 transition-colors">
+              <span class="material-icons-outlined text-anthropic-mid-gray group-hover:text-anthropic-orange transition-colors">add</span>
+            </div>
+            <span class="text-sm font-medium text-anthropic-mid-gray group-hover:text-anthropic-orange transition-colors">Browse 100+ apps</span>
+          </div>
+        </div>
+
+        <!-- Available apps preview -->
+        <h2 class="text-xs font-semibold uppercase tracking-wider text-anthropic-mid-gray mb-4">Recommended</h2>
+        <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-5">
+          <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-anthropic-light-gray/30 transition-colors cursor-pointer">
+              <div class="w-10 h-10 rounded-xl bg-[#7B68EE] flex items-center justify-center text-white text-xs font-bold">Li</div>
+              <span class="text-xs font-medium text-anthropic-dark">Linear</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-anthropic-light-gray/30 transition-colors cursor-pointer">
+              <div class="w-10 h-10 rounded-xl bg-[#FF4500] flex items-center justify-center text-white text-xs font-bold">Fi</div>
+              <span class="text-xs font-medium text-anthropic-dark">Figma</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-anthropic-light-gray/30 transition-colors cursor-pointer">
+              <div class="w-10 h-10 rounded-xl bg-[#0052CC] flex items-center justify-center text-white text-xs font-bold">Ji</div>
+              <span class="text-xs font-medium text-anthropic-dark">Jira</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-anthropic-light-gray/30 transition-colors cursor-pointer">
+              <div class="w-10 h-10 rounded-xl bg-[#7289DA] flex items-center justify-center text-white text-xs font-bold">Di</div>
+              <span class="text-xs font-medium text-anthropic-dark">Discord</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-anthropic-light-gray/30 transition-colors cursor-pointer">
+              <div class="w-10 h-10 rounded-xl bg-[#25D366] flex items-center justify-center text-white text-xs font-bold">WA</div>
+              <span class="text-xs font-medium text-anthropic-dark">WhatsApp</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-anthropic-light-gray/30 transition-colors cursor-pointer">
+              <div class="w-10 h-10 rounded-xl bg-[#1DA1F2] flex items-center justify-center text-white text-xs font-bold">X</div>
+              <span class="text-xs font-medium text-anthropic-dark">X (Twitter)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- PAGE 3: STATISTICS / ANALYTICS -->
+<!-- ============================================================ -->
+<div class="page-panel" id="page-analytics">
+  <div class="flex min-h-[calc(100vh-100px)]">
+    <!-- Sidebar -->
+    <aside class="w-60 flex-shrink-0 bg-anthropic-dark text-white flex flex-col">
+      <div class="p-5 flex items-center gap-2.5">
+        <div class="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
+          <span class="text-anthropic-dark text-xs font-bold">T</span>
+        </div>
+        <span class="font-semibold text-sm">Typeless</span>
+        <span class="ml-auto px-2 py-0.5 text-[10px] font-medium bg-anthropic-orange/20 text-anthropic-orange rounded-full">Pro</span>
+      </div>
+      <nav class="flex-1 px-3 space-y-0.5 mt-2">
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">home</span> Home
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">history</span> History
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">apps</span> Integrations
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white bg-white/10 rounded-xl" href="#">
+          <span class="material-icons-outlined text-[18px]">bar_chart</span> Analytics
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">settings</span> Settings
+        </a>
+      </nav>
+      <div class="p-4 mt-auto">
+        <div class="flex items-center gap-3 px-2 py-2">
+          <div class="w-8 h-8 rounded-full bg-anthropic-orange/30 flex items-center justify-center text-xs font-semibold text-anthropic-orange">JY</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-medium truncate">Jun Yu</div>
+            <div class="text-[10px] text-white/40 truncate">Pro Plan</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 bg-anthropic-light p-8 overflow-y-auto">
+      <div class="max-w-5xl">
+        <div class="flex items-start justify-between mb-8">
+          <div>
+            <h1 class="text-2xl font-bold text-anthropic-dark mb-2">Your Statistics</h1>
+            <p class="text-sm text-anthropic-mid-gray">Track your voice productivity journey.</p>
+          </div>
+          <div class="flex items-center gap-2 bg-white rounded-xl border border-anthropic-light-gray px-1 py-1">
+            <button class="px-3 py-1.5 text-xs font-semibold text-white bg-anthropic-dark rounded-lg">Week</button>
+            <button class="px-3 py-1.5 text-xs font-medium text-anthropic-mid-gray hover:text-anthropic-dark rounded-lg">Month</button>
+            <button class="px-3 py-1.5 text-xs font-medium text-anthropic-mid-gray hover:text-anthropic-dark rounded-lg">Year</button>
+          </div>
+        </div>
+
+        <!-- Stat cards row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <!-- Time saved -->
+          <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-medium text-anthropic-mid-gray uppercase tracking-wider">Time Saved</span>
+              <div class="w-8 h-8 rounded-xl bg-anthropic-green/10 flex items-center justify-center">
+                <span class="material-icons-outlined text-anthropic-green text-[16px]">schedule</span>
+              </div>
+            </div>
+            <div class="text-2xl font-bold text-anthropic-dark mb-1">12.4 <span class="text-base font-medium text-anthropic-mid-gray">hrs</span></div>
+            <div class="flex items-center gap-1 text-xs">
+              <span class="text-anthropic-green font-medium">+23%</span>
+              <span class="text-anthropic-mid-gray">vs last week</span>
+            </div>
+          </div>
+
+          <!-- Words dictated -->
+          <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-medium text-anthropic-mid-gray uppercase tracking-wider">Words Dictated</span>
+              <div class="w-8 h-8 rounded-xl bg-anthropic-blue/10 flex items-center justify-center">
+                <span class="material-icons-outlined text-anthropic-blue text-[16px]">text_fields</span>
+              </div>
+            </div>
+            <div class="text-2xl font-bold text-anthropic-dark mb-1">24,891</div>
+            <div class="flex items-center gap-1 text-xs">
+              <span class="text-anthropic-green font-medium">+18%</span>
+              <span class="text-anthropic-mid-gray">vs last week</span>
+            </div>
+          </div>
+
+          <!-- Accuracy -->
+          <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-medium text-anthropic-mid-gray uppercase tracking-wider">Accuracy</span>
+              <div class="w-8 h-8 rounded-xl bg-anthropic-orange/10 flex items-center justify-center">
+                <span class="material-icons-outlined text-anthropic-orange text-[16px]">verified</span>
+              </div>
+            </div>
+            <div class="text-2xl font-bold text-anthropic-dark mb-1">96.2<span class="text-base font-medium text-anthropic-mid-gray">%</span></div>
+            <div class="flex items-center gap-1 text-xs">
+              <span class="text-anthropic-green font-medium">+1.4%</span>
+              <span class="text-anthropic-mid-gray">improving</span>
+            </div>
+          </div>
+
+          <!-- Speed -->
+          <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-medium text-anthropic-mid-gray uppercase tracking-wider">Speed Boost</span>
+              <div class="w-8 h-8 rounded-xl bg-[#8B5CF6]/10 flex items-center justify-center">
+                <span class="material-icons-outlined text-[#8B5CF6] text-[16px]">bolt</span>
+              </div>
+            </div>
+            <div class="text-2xl font-bold text-anthropic-dark mb-1">4.8<span class="text-base font-medium text-anthropic-mid-gray">x</span></div>
+            <div class="flex items-center gap-1 text-xs">
+              <span class="text-anthropic-mid-gray">faster than typing</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Usage chart -->
+        <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-6 mb-8">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-sm font-semibold text-anthropic-dark">Daily Dictation Time</h2>
+            <span class="text-xs text-anthropic-mid-gray">Feb 14 — Feb 20, 2026</span>
+          </div>
+          <div class="flex items-end justify-between gap-3 h-40 px-2">
+            <div class="flex flex-col items-center gap-2 flex-1">
+              <div class="w-full bg-anthropic-blue/20 rounded-lg chart-bar" style="height: 45%; animation-delay: 0s"></div>
+              <span class="text-[10px] text-anthropic-mid-gray">Mon</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 flex-1">
+              <div class="w-full bg-anthropic-blue/20 rounded-lg chart-bar" style="height: 72%; animation-delay: 0.05s"></div>
+              <span class="text-[10px] text-anthropic-mid-gray">Tue</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 flex-1">
+              <div class="w-full bg-anthropic-blue/20 rounded-lg chart-bar" style="height: 38%; animation-delay: 0.1s"></div>
+              <span class="text-[10px] text-anthropic-mid-gray">Wed</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 flex-1">
+              <div class="w-full bg-anthropic-blue/20 rounded-lg chart-bar" style="height: 85%; animation-delay: 0.15s"></div>
+              <span class="text-[10px] text-anthropic-mid-gray">Thu</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 flex-1">
+              <div class="w-full bg-anthropic-blue/20 rounded-lg chart-bar" style="height: 60%; animation-delay: 0.2s"></div>
+              <span class="text-[10px] text-anthropic-mid-gray">Fri</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 flex-1">
+              <div class="w-full bg-anthropic-light-gray rounded-lg chart-bar" style="height: 20%; animation-delay: 0.25s"></div>
+              <span class="text-[10px] text-anthropic-mid-gray">Sat</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 flex-1">
+              <div class="w-full bg-anthropic-orange rounded-lg chart-bar" style="height: 92%; animation-delay: 0.3s"></div>
+              <span class="text-[10px] font-medium text-anthropic-dark">Today</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom row: Most used apps + Efficiency comparison -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Most used apps -->
+          <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-6">
+            <h2 class="text-sm font-semibold text-anthropic-dark mb-5">Most Used Apps</h2>
+            <div class="space-y-4">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-[#4A154B] flex items-center justify-center text-white text-xs font-bold">#</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-sm font-medium text-anthropic-dark">Slack</span>
+                    <span class="text-xs text-anthropic-mid-gray">42%</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-anthropic-light-gray rounded-full overflow-hidden">
+                    <div class="h-full bg-[#4A154B] rounded-full" style="width: 42%"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-white border border-anthropic-light-gray flex items-center justify-center text-sm">✉️</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-sm font-medium text-anthropic-dark">Gmail</span>
+                    <span class="text-xs text-anthropic-mid-gray">28%</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-anthropic-light-gray rounded-full overflow-hidden">
+                    <div class="h-full bg-anthropic-orange rounded-full" style="width: 28%"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-[#007ACC] flex items-center justify-center text-white text-xs font-bold">VS</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-sm font-medium text-anthropic-dark">VS Code</span>
+                    <span class="text-xs text-anthropic-mid-gray">18%</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-anthropic-light-gray rounded-full overflow-hidden">
+                    <div class="h-full bg-anthropic-blue rounded-full" style="width: 18%"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-[#191919] flex items-center justify-center text-white text-xs font-bold">N</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-sm font-medium text-anthropic-dark">Notion</span>
+                    <span class="text-xs text-anthropic-mid-gray">12%</span>
+                  </div>
+                  <div class="w-full h-1.5 bg-anthropic-light-gray rounded-full overflow-hidden">
+                    <div class="h-full bg-anthropic-dark rounded-full" style="width: 12%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Efficiency comparison -->
+          <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-6">
+            <h2 class="text-sm font-semibold text-anthropic-dark mb-5">Typing vs Dictation</h2>
+            <div class="space-y-5">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-medium text-anthropic-mid-gray">Average typing speed</span>
+                  <span class="text-sm font-semibold text-anthropic-mid-gray">45 WPM</span>
+                </div>
+                <div class="w-full h-3 bg-anthropic-light-gray rounded-full overflow-hidden">
+                  <div class="h-full bg-anthropic-mid-gray rounded-full transition-all" style="width: 20%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-medium text-anthropic-orange">Your dictation speed</span>
+                  <span class="text-sm font-semibold text-anthropic-orange">216 WPM</span>
+                </div>
+                <div class="w-full h-3 bg-anthropic-orange/10 rounded-full overflow-hidden">
+                  <div class="h-full bg-anthropic-orange rounded-full transition-all" style="width: 96%"></div>
+                </div>
+              </div>
+              <div class="mt-4 p-4 rounded-xl bg-anthropic-green/5 border border-anthropic-green/10">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-anthropic-green/10 flex items-center justify-center flex-shrink-0">
+                    <span class="material-icons-outlined text-anthropic-green">trending_up</span>
+                  </div>
+                  <div>
+                    <div class="text-sm font-semibold text-anthropic-dark">4.8x faster</div>
+                    <div class="text-xs text-anthropic-mid-gray">You've saved ~12.4 hours this week by dictating instead of typing.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- PAGE 4: ERROR STATES -->
+<!-- ============================================================ -->
+<div class="page-panel" id="page-errors">
+  <div class="max-w-5xl mx-auto px-6 py-10">
+    <h1 class="text-2xl font-bold text-anthropic-dark mb-2">Error State Pages</h1>
+    <p class="text-sm text-anthropic-mid-gray mb-10">Four distinct error scenarios with friendly, actionable messages.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- Network Error -->
+      <div class="bg-white rounded-3xl border border-anthropic-light-gray shadow-card p-8 flex flex-col items-center text-center">
+        <div class="relative w-16 h-16 rounded-2xl bg-anthropic-orange/10 flex items-center justify-center mb-5">
+          <span class="material-icons-outlined text-anthropic-orange text-3xl">wifi_off</span>
+        </div>
+        <h3 class="text-lg font-bold text-anthropic-dark mb-2">No Internet Connection</h3>
+        <p class="text-sm text-anthropic-mid-gray mb-6 leading-relaxed max-w-sm">
+          Typeless needs an internet connection to process your voice. Check your Wi-Fi or ethernet and try again.
+        </p>
+        <button class="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-anthropic-orange rounded-xl hover:bg-anthropic-orange/90 transition-colors">
+          <span class="material-icons-outlined text-[16px]">refresh</span>
+          Try Again
+        </button>
+        <p class="text-xs text-anthropic-mid-gray mt-4">Offline mode coming soon</p>
+      </div>
+
+      <!-- Permission Error -->
+      <div class="bg-white rounded-3xl border border-anthropic-light-gray shadow-card p-8 flex flex-col items-center text-center">
+        <div class="relative w-16 h-16 rounded-2xl bg-anthropic-blue/10 flex items-center justify-center mb-5">
+          <span class="material-icons-outlined text-anthropic-blue text-3xl">shield</span>
+        </div>
+        <h3 class="text-lg font-bold text-anthropic-dark mb-2">Accessibility Permission Needed</h3>
+        <p class="text-sm text-anthropic-mid-gray mb-6 leading-relaxed max-w-sm">
+          Typeless needs Accessibility permission to type text into your applications. This is required for the core dictation feature.
+        </p>
+        <div class="space-y-2 w-full max-w-xs">
+          <button class="w-full flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-anthropic-dark rounded-xl hover:bg-anthropic-dark/90 transition-colors">
+            <span class="material-icons-outlined text-[16px]">open_in_new</span>
+            Open System Settings
+          </button>
+          <button class="w-full px-6 py-2 text-sm font-medium text-anthropic-mid-gray hover:text-anthropic-dark transition-colors">
+            Remind me later
+          </button>
+        </div>
+      </div>
+
+      <!-- Microphone Error -->
+      <div class="bg-white rounded-3xl border border-anthropic-light-gray shadow-card p-8 flex flex-col items-center text-center">
+        <div class="relative w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mb-5">
+          <span class="material-icons-outlined text-red-400 text-3xl">mic_off</span>
+        </div>
+        <h3 class="text-lg font-bold text-anthropic-dark mb-2">Microphone Not Detected</h3>
+        <p class="text-sm text-anthropic-mid-gray mb-5 leading-relaxed max-w-sm">
+          We couldn't access your microphone. Try these steps:
+        </p>
+        <div class="text-left w-full max-w-xs space-y-3 mb-6">
+          <div class="flex items-start gap-3">
+            <div class="w-6 h-6 rounded-full bg-anthropic-light-gray flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-xs font-semibold text-anthropic-dark">1</span>
+            </div>
+            <span class="text-sm text-anthropic-dark">Check that your microphone is plugged in</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-6 h-6 rounded-full bg-anthropic-light-gray flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-xs font-semibold text-anthropic-dark">2</span>
+            </div>
+            <span class="text-sm text-anthropic-dark">Open <strong>System Settings &gt; Privacy &gt; Microphone</strong> and enable Typeless</span>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-6 h-6 rounded-full bg-anthropic-light-gray flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-xs font-semibold text-anthropic-dark">3</span>
+            </div>
+            <span class="text-sm text-anthropic-dark">Try selecting a different input device in Settings</span>
+          </div>
+        </div>
+        <button class="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-anthropic-dark bg-anthropic-light-gray/70 rounded-xl hover:bg-anthropic-light-gray transition-colors">
+          <span class="material-icons-outlined text-[16px]">settings</span>
+          Audio Settings
+        </button>
+      </div>
+
+      <!-- Generic Error -->
+      <div class="bg-white rounded-3xl border border-anthropic-light-gray shadow-card p-8 flex flex-col items-center text-center">
+        <div class="relative w-16 h-16 rounded-2xl bg-anthropic-light-gray/50 flex items-center justify-center mb-5">
+          <span class="material-icons-outlined text-anthropic-mid-gray text-3xl">error_outline</span>
+        </div>
+        <h3 class="text-lg font-bold text-anthropic-dark mb-2">Something Went Wrong</h3>
+        <p class="text-sm text-anthropic-mid-gray mb-6 leading-relaxed max-w-sm">
+          An unexpected error occurred. Our team has been notified and is looking into it.
+        </p>
+        <div class="bg-anthropic-light-gray/30 rounded-xl px-4 py-2 mb-5 w-full max-w-xs">
+          <code class="text-xs text-anthropic-mid-gray font-mono">Error ID: ERR-2026-0220-A4F2</code>
+        </div>
+        <div class="space-y-2 w-full max-w-xs">
+          <button class="w-full flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-anthropic-dark rounded-xl hover:bg-anthropic-dark/90 transition-colors">
+            <span class="material-icons-outlined text-[16px]">refresh</span>
+            Restart Typeless
+          </button>
+          <button class="w-full flex items-center justify-center gap-2 px-6 py-2 text-sm font-medium text-anthropic-blue hover:text-anthropic-blue/80 transition-colors">
+            <span class="material-icons-outlined text-[14px]">mail</span>
+            Contact Support
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- PAGE 5: UPDATE NOTIFICATION -->
+<!-- ============================================================ -->
+<div class="page-panel" id="page-update">
+  <div class="min-h-[calc(100vh-100px)] flex items-center justify-center p-8">
+    <!-- Update modal -->
+    <div class="bg-white rounded-3xl shadow-elevated max-w-lg w-full overflow-hidden">
+      <!-- Header with gradient -->
+      <div class="bg-gradient-to-br from-anthropic-dark to-[#2a2928] p-8 text-center text-white">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm mb-4">
+          <span class="material-icons-outlined text-3xl">system_update</span>
+        </div>
+        <h2 class="text-xl font-bold mb-1">Typeless v2.4.0 Available</h2>
+        <p class="text-sm text-white/60">Released February 20, 2026</p>
+      </div>
+
+      <!-- Changelog -->
+      <div class="p-8">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-anthropic-mid-gray mb-4">What's New</h3>
+        <div class="space-y-3 mb-8">
+          <div class="flex items-start gap-3">
+            <span class="mt-0.5 w-5 h-5 rounded-md bg-anthropic-green/10 flex items-center justify-center flex-shrink-0">
+              <span class="material-icons-outlined text-anthropic-green text-[14px]">add</span>
+            </span>
+            <div>
+              <span class="text-sm font-medium text-anthropic-dark">Real-time streaming transcription</span>
+              <p class="text-xs text-anthropic-mid-gray mt-0.5">See your words appear as you speak, with sub-second latency.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="mt-0.5 w-5 h-5 rounded-md bg-anthropic-green/10 flex items-center justify-center flex-shrink-0">
+              <span class="material-icons-outlined text-anthropic-green text-[14px]">add</span>
+            </span>
+            <div>
+              <span class="text-sm font-medium text-anthropic-dark">10 new language models</span>
+              <p class="text-xs text-anthropic-mid-gray mt-0.5">Including Korean, Vietnamese, Thai, and Arabic dialects.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="mt-0.5 w-5 h-5 rounded-md bg-anthropic-blue/10 flex items-center justify-center flex-shrink-0">
+              <span class="material-icons-outlined text-anthropic-blue text-[14px]">auto_fix_high</span>
+            </span>
+            <div>
+              <span class="text-sm font-medium text-anthropic-dark">Improved context awareness</span>
+              <p class="text-xs text-anthropic-mid-gray mt-0.5">Better tone matching across Slack, email, and IDE contexts.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="mt-0.5 w-5 h-5 rounded-md bg-anthropic-orange/10 flex items-center justify-center flex-shrink-0">
+              <span class="material-icons-outlined text-anthropic-orange text-[14px]">bug_report</span>
+            </span>
+            <div>
+              <span class="text-sm font-medium text-anthropic-dark">Bug fixes & stability</span>
+              <p class="text-xs text-anthropic-mid-gray mt-0.5">Fixed audio dropout on M3 Macs and clipboard restoration issues.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-3">
+          <button class="flex-1 px-5 py-3 text-sm font-medium text-anthropic-mid-gray bg-anthropic-light-gray/40 rounded-xl hover:bg-anthropic-light-gray/60 transition-colors">
+            Remind Me Later
+          </button>
+          <button class="flex-1 px-5 py-3 text-sm font-semibold text-white bg-anthropic-orange rounded-xl hover:bg-anthropic-orange/90 shadow-sm transition-all">
+            Update Now
+          </button>
+        </div>
+
+        <p class="text-center text-[10px] text-anthropic-mid-gray mt-4">The update will download in the background. Typeless will restart when ready.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- PAGE 6: HELP & SUPPORT -->
+<!-- ============================================================ -->
+<div class="page-panel" id="page-help">
+  <div class="flex min-h-[calc(100vh-100px)]">
+    <!-- Sidebar -->
+    <aside class="w-60 flex-shrink-0 bg-anthropic-dark text-white flex flex-col">
+      <div class="p-5 flex items-center gap-2.5">
+        <div class="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
+          <span class="text-anthropic-dark text-xs font-bold">T</span>
+        </div>
+        <span class="font-semibold text-sm">Typeless</span>
+        <span class="ml-auto px-2 py-0.5 text-[10px] font-medium bg-anthropic-orange/20 text-anthropic-orange rounded-full">Pro</span>
+      </div>
+      <nav class="flex-1 px-3 space-y-0.5 mt-2">
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">home</span> Home
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">history</span> History
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">apps</span> Integrations
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">bar_chart</span> Analytics
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white/50 rounded-xl hover:bg-white/5 transition-colors" href="#">
+          <span class="material-icons-outlined text-[18px]">settings</span> Settings
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-white bg-white/10 rounded-xl" href="#">
+          <span class="material-icons-outlined text-[18px]">help_outline</span> Help
+        </a>
+      </nav>
+      <div class="p-4 mt-auto">
+        <div class="flex items-center gap-3 px-2 py-2">
+          <div class="w-8 h-8 rounded-full bg-anthropic-orange/30 flex items-center justify-center text-xs font-semibold text-anthropic-orange">JY</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-medium truncate">Jun Yu</div>
+            <div class="text-[10px] text-white/40 truncate">Pro Plan</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 bg-anthropic-light p-8 overflow-y-auto">
+      <div class="max-w-4xl">
+        <!-- Header with search -->
+        <div class="mb-8">
+          <h1 class="text-2xl font-bold text-anthropic-dark mb-2">Help & Support</h1>
+          <p class="text-sm text-anthropic-mid-gray mb-5">Find answers, watch tutorials, or reach out to our team.</p>
+          <div class="relative">
+            <span class="material-icons-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[18px] text-anthropic-mid-gray">search</span>
+            <input class="w-full bg-white border border-anthropic-light-gray rounded-xl pl-11 pr-4 py-3 text-sm text-anthropic-dark placeholder:text-anthropic-mid-gray focus:outline-none focus:ring-2 focus:ring-anthropic-blue/30 focus:border-anthropic-blue shadow-soft" placeholder="Search help articles..." type="text"/>
+          </div>
+        </div>
+
+        <!-- Quick start video -->
+        <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft overflow-hidden mb-8">
+          <div class="bg-anthropic-dark aspect-video flex items-center justify-center relative group cursor-pointer">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+            <div class="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/30 transition-colors z-10">
+              <span class="material-icons-outlined text-white text-3xl ml-1">play_arrow</span>
+            </div>
+            <div class="absolute bottom-4 left-5 z-10">
+              <h3 class="text-white font-semibold text-sm mb-0.5">Getting Started with Typeless</h3>
+              <p class="text-white/60 text-xs">2 min tutorial &middot; Learn the basics</p>
+            </div>
+            <div class="absolute bottom-4 right-5 z-10">
+              <span class="text-white/40 text-xs">2:14</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick links -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+          <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-5 hover:shadow-card transition-shadow cursor-pointer group">
+            <div class="w-10 h-10 rounded-xl bg-anthropic-blue/10 flex items-center justify-center mb-3 group-hover:bg-anthropic-blue/20 transition-colors">
+              <span class="material-icons-outlined text-anthropic-blue text-[18px]">keyboard</span>
+            </div>
+            <h3 class="text-sm font-semibold text-anthropic-dark mb-1">Keyboard Shortcuts</h3>
+            <p class="text-xs text-anthropic-mid-gray leading-relaxed">Learn all the shortcuts to use Typeless like a pro.</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-5 hover:shadow-card transition-shadow cursor-pointer group">
+            <div class="w-10 h-10 rounded-xl bg-anthropic-orange/10 flex items-center justify-center mb-3 group-hover:bg-anthropic-orange/20 transition-colors">
+              <span class="material-icons-outlined text-anthropic-orange text-[18px]">mic</span>
+            </div>
+            <h3 class="text-sm font-semibold text-anthropic-dark mb-1">Microphone Setup</h3>
+            <p class="text-xs text-anthropic-mid-gray leading-relaxed">Configure your mic for the best dictation experience.</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-anthropic-light-gray shadow-soft p-5 hover:shadow-card transition-shadow cursor-pointer group">
+            <div class="w-10 h-10 rounded-xl bg-anthropic-green/10 flex items-center justify-center mb-3 group-hover:bg-anthropic-green/20 transition-colors">
+              <span class="material-icons-outlined text-anthropic-green text-[18px]">extension</span>
+            </div>
+            <h3 class="text-sm font-semibold text-anthropic-dark mb-1">App Integrations</h3>
+            <p class="text-xs text-anthropic-mid-gray leading-relaxed">Connect and configure apps for context-aware output.</p>
+          </div>
+        </div>
+
+        <!-- FAQ -->
+        <h2 class="text-sm font-semibold text-anthropic-dark mb-4">Frequently Asked Questions</h2>
+        <div class="space-y-2 mb-10" id="faq-list">
+          <div class="faq-item bg-white rounded-xl border border-anthropic-light-gray shadow-soft overflow-hidden">
+            <button class="w-full flex items-center justify-between px-5 py-4 text-left" onclick="toggleFaq(this)">
+              <span class="text-sm font-medium text-anthropic-dark">How do I change the hotkey for dictation?</span>
+              <span class="material-icons-outlined text-[18px] text-anthropic-mid-gray faq-icon">expand_more</span>
+            </button>
+            <div class="faq-answer px-5 pb-4">
+              <p class="text-sm text-anthropic-mid-gray leading-relaxed">Go to <strong>Settings &gt; Shortcuts</strong> and click on the current hotkey. Press your desired new key combination. Popular choices include <code class="bg-anthropic-light-gray/50 px-1.5 py-0.5 rounded text-xs">Fn</code>, <code class="bg-anthropic-light-gray/50 px-1.5 py-0.5 rounded text-xs">Right Cmd</code>, or <code class="bg-anthropic-light-gray/50 px-1.5 py-0.5 rounded text-xs">F2</code>.</p>
+            </div>
+          </div>
+          <div class="faq-item bg-white rounded-xl border border-anthropic-light-gray shadow-soft overflow-hidden">
+            <button class="w-full flex items-center justify-between px-5 py-4 text-left" onclick="toggleFaq(this)">
+              <span class="text-sm font-medium text-anthropic-dark">Does Typeless store my voice recordings?</span>
+              <span class="material-icons-outlined text-[18px] text-anthropic-mid-gray faq-icon">expand_more</span>
+            </button>
+            <div class="faq-answer px-5 pb-4">
+              <p class="text-sm text-anthropic-mid-gray leading-relaxed">No. Typeless follows a <strong>privacy-first</strong> approach. Voice recordings are processed in real-time and immediately discarded. Only the transcribed text is stored locally on your device, and you can control retention settings in <strong>Settings &gt; Privacy</strong>.</p>
+            </div>
+          </div>
+          <div class="faq-item bg-white rounded-xl border border-anthropic-light-gray shadow-soft overflow-hidden">
+            <button class="w-full flex items-center justify-between px-5 py-4 text-left" onclick="toggleFaq(this)">
+              <span class="text-sm font-medium text-anthropic-dark">Why is my dictation not being inserted into the app?</span>
+              <span class="material-icons-outlined text-[18px] text-anthropic-mid-gray faq-icon">expand_more</span>
+            </button>
+            <div class="faq-answer px-5 pb-4">
+              <p class="text-sm text-anthropic-mid-gray leading-relaxed">This usually means the Accessibility permission needs to be granted. Go to <strong>System Settings &gt; Privacy & Security &gt; Accessibility</strong> and ensure Typeless is enabled. You may need to remove and re-add it if it was previously denied.</p>
+            </div>
+          </div>
+          <div class="faq-item bg-white rounded-xl border border-anthropic-light-gray shadow-soft overflow-hidden">
+            <button class="w-full flex items-center justify-between px-5 py-4 text-left" onclick="toggleFaq(this)">
+              <span class="text-sm font-medium text-anthropic-dark">Can I use Typeless in multiple languages simultaneously?</span>
+              <span class="material-icons-outlined text-[18px] text-anthropic-mid-gray faq-icon">expand_more</span>
+            </button>
+            <div class="faq-answer px-5 pb-4">
+              <p class="text-sm text-anthropic-mid-gray leading-relaxed">Yes! Typeless supports <strong>auto language detection</strong> and can handle mixed-language dictation. You can speak in English and switch to Chinese mid-sentence — the AI will correctly identify and transcribe both.</p>
+            </div>
+          </div>
+          <div class="faq-item bg-white rounded-xl border border-anthropic-light-gray shadow-soft overflow-hidden">
+            <button class="w-full flex items-center justify-between px-5 py-4 text-left" onclick="toggleFaq(this)">
+              <span class="text-sm font-medium text-anthropic-dark">What's included in the Pro plan?</span>
+              <span class="material-icons-outlined text-[18px] text-anthropic-mid-gray faq-icon">expand_more</span>
+            </button>
+            <div class="faq-answer px-5 pb-4">
+              <p class="text-sm text-anthropic-mid-gray leading-relaxed">Pro ($12/month billed annually) includes <strong>unlimited dictation</strong>, priority feature requests, early access to new features, and team member management. The free plan includes 4,000 words per week.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact support -->
+        <div class="bg-gradient-to-br from-anthropic-dark to-[#2a2928] rounded-2xl p-8 text-white">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-bold mb-1">Still need help?</h3>
+              <p class="text-sm text-white/60">Our support team typically responds within 2 hours.</p>
+            </div>
+            <div class="flex gap-3">
+              <button class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-white/10 rounded-xl hover:bg-white/20 transition-colors">
+                <span class="material-icons-outlined text-[16px]">mail</span>
+                Email Us
+              </button>
+              <button class="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-anthropic-dark bg-white rounded-xl hover:bg-white/90 transition-colors">
+                <span class="material-icons-outlined text-[16px]">chat</span>
+                Live Chat
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- SCRIPTS -->
+<!-- ============================================================ -->
+<script>
+// Tab navigation
+document.querySelectorAll('.page-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.dataset.page).classList.add('active');
+  });
+});
+
+// FAQ toggle
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  item.classList.toggle('open');
+}
+
+// Edit toggle for history detail
+function toggleEdit() {
+  const content = document.getElementById('dictation-content');
+  const icon = document.getElementById('edit-icon');
+  const label = document.getElementById('edit-label');
+  const isEditable = content.contentEditable === 'true';
+
+  content.contentEditable = !isEditable;
+  if (!isEditable) {
+    content.style.outline = '2px solid #6a9bcc';
+    content.style.outlineOffset = '4px';
+    content.style.borderRadius = '12px';
+    icon.textContent = 'check';
+    label.textContent = 'Save';
+    content.focus();
+  } else {
+    content.style.outline = 'none';
+    icon.textContent = 'edit';
+    label.textContent = 'Edit';
+  }
+}
+</script>
+
+</body>
+</html>

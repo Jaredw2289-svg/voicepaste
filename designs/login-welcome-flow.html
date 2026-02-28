@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Typeless — Login & Welcome Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+  /* ═══════════════════════════════════════════════════════════════
+     DESIGN SYSTEM — Anthropic/Claude Inspired
+     ═══════════════════════════════════════════════════════════════ */
+  :root {
+    --dark: #141413;
+    --light: #faf9f5;
+    --mid-gray: #b0aea5;
+    --light-gray: #e8e6dc;
+    --orange: #d97757;
+    --orange-hover: #c4684a;
+    --orange-light: #f5e6df;
+    --blue: #6a9bcc;
+    --green: #788c5d;
+    --canvas: #0e0e0d;
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-ui: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 24px;
+    --shadow-window: 0 25px 60px rgba(0,0,0,0.35), 0 8px 20px rgba(0,0,0,0.2);
+    --shadow-input: 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-btn: 0 2px 8px rgba(217,119,87,0.25);
+    --shadow-card: 0 2px 12px rgba(0,0,0,0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--canvas);
+    font-family: var(--font-ui);
+    color: var(--dark);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     CANVAS & LAYOUT
+     ═══════════════════════════════════════════════════════════════ */
+  .canvas {
+    padding: 60px 40px 100px;
+    min-height: 100vh;
+  }
+
+  .canvas-title {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .canvas-title h1 {
+    font-family: var(--font-display);
+    font-size: 42px;
+    color: var(--light);
+    font-weight: 400;
+    letter-spacing: -0.5px;
+  }
+  .canvas-subtitle {
+    text-align: center;
+    color: var(--mid-gray);
+    font-size: 15px;
+    margin-bottom: 60px;
+    font-weight: 400;
+  }
+
+  .section-label {
+    color: var(--mid-gray);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .artboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    margin-bottom: 64px;
+    flex-wrap: wrap;
+  }
+
+  .artboard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .artboard-label {
+    color: #666;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     macOS WINDOW FRAME
+     ═══════════════════════════════════════════════════════════════ */
+  .window {
+    background: var(--light);
+    border-radius: 12px;
+    box-shadow: var(--shadow-window);
+    overflow: hidden;
+    position: relative;
+  }
+  .window--narrow { width: 440px; }
+  .window--wide { width: 560px; }
+
+  .window-chrome {
+    height: 52px;
+    background: linear-gradient(180deg, #f2f1ec 0%, #eeede8 100%);
+    border-bottom: 1px solid var(--light-gray);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    position: relative;
+    -webkit-app-region: drag;
+  }
+
+  .traffic-lights {
+    display: flex;
+    gap: 8px;
+  }
+  .traffic-light {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    position: relative;
+  }
+  .traffic-light--close {
+    background: #ff5f57;
+    box-shadow: inset 0 -1px 1px rgba(0,0,0,0.1);
+  }
+  .traffic-light--minimize {
+    background: #febc2e;
+    box-shadow: inset 0 -1px 1px rgba(0,0,0,0.1);
+  }
+  .traffic-light--maximize {
+    background: #28c840;
+    box-shadow: inset 0 -1px 1px rgba(0,0,0,0.1);
+  }
+
+  .window-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--mid-gray);
+  }
+
+  .window-body {
+    padding: 40px 44px 44px;
+  }
+  .window-body--onboarding {
+    padding: 36px 52px 48px;
+    text-align: center;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     BRAND / LOGO
+     ═══════════════════════════════════════════════════════════════ */
+  .brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 36px;
+  }
+
+  .logo-mark {
+    width: 48px;
+    height: 48px;
+    background: var(--dark);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    transform: rotate(-8deg);
+    box-shadow: 0 4px 12px rgba(20,20,19,0.2);
+  }
+  .logo-mark span {
+    color: var(--light);
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 400;
+    transform: rotate(8deg);
+    display: block;
+    line-height: 1;
+  }
+
+  .brand-name {
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: var(--dark);
+    font-weight: 400;
+    letter-spacing: -0.3px;
+    margin-bottom: 4px;
+  }
+
+  .brand-tagline {
+    font-size: 14px;
+    color: var(--mid-gray);
+    font-weight: 400;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     FORM ELEMENTS
+     ═══════════════════════════════════════════════════════════════ */
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--dark);
+    margin-bottom: 7px;
+    letter-spacing: 0.1px;
+  }
+
+  .form-input-wrap {
+    position: relative;
+  }
+
+  .form-input {
+    width: 100%;
+    height: 46px;
+    border: 1.5px solid var(--light-gray);
+    border-radius: var(--radius-sm);
+    padding: 0 16px;
+    font-family: var(--font-ui);
+    font-size: 14px;
+    color: var(--dark);
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: var(--shadow-input);
+  }
+  .form-input::placeholder {
+    color: var(--mid-gray);
+    font-weight: 400;
+  }
+  .form-input:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px var(--orange-light);
+  }
+  .form-input:hover:not(:focus) {
+    border-color: var(--mid-gray);
+  }
+
+  .input-toggle {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--mid-gray);
+    padding: 2px;
+    display: flex;
+    transition: color 0.2s;
+  }
+  .input-toggle:hover {
+    color: var(--dark);
+  }
+
+  .form-link {
+    font-size: 13px;
+    color: var(--orange);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .form-link:hover {
+    color: var(--orange-hover);
+  }
+
+  .form-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+    margin-top: -8px;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     BUTTONS
+     ═══════════════════════════════════════════════════════════════ */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui);
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.2px;
+    gap: 8px;
+  }
+
+  .btn--primary {
+    width: 100%;
+    background: var(--orange);
+    color: #fff;
+    box-shadow: var(--shadow-btn);
+  }
+  .btn--primary:hover {
+    background: var(--orange-hover);
+    box-shadow: 0 4px 16px rgba(217,119,87,0.35);
+    transform: translateY(-1px);
+  }
+  .btn--primary:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(217,119,87,0.2);
+  }
+
+  .btn--social {
+    flex: 1;
+    height: 46px;
+    background: #fff;
+    border: 1.5px solid var(--light-gray);
+    color: var(--dark);
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-input);
+  }
+  .btn--social:hover {
+    border-color: var(--mid-gray);
+    background: #fefefe;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .btn--ghost {
+    background: none;
+    border: none;
+    color: var(--mid-gray);
+    font-size: 13px;
+    font-weight: 500;
+    height: auto;
+    padding: 4px 0;
+  }
+  .btn--ghost:hover {
+    color: var(--dark);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     DIVIDER
+     ═══════════════════════════════════════════════════════════════ */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .divider::before,
+  .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--light-gray);
+  }
+  .divider span {
+    font-size: 12px;
+    color: var(--mid-gray);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .social-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     FOOTER LINK
+     ═══════════════════════════════════════════════════════════════ */
+  .form-footer {
+    text-align: center;
+    font-size: 13px;
+    color: var(--mid-gray);
+    margin-top: 4px;
+  }
+  .form-footer a {
+    color: var(--orange);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  .form-footer a:hover {
+    color: var(--orange-hover);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     PASSWORD STRENGTH
+     ═══════════════════════════════════════════════════════════════ */
+  .password-strength {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .strength-bar {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--light-gray);
+    transition: background 0.3s;
+  }
+  .strength-bar.active:nth-child(1) { background: #e05252; }
+  .strength-bar.active:nth-child(2) { background: var(--orange); }
+  .strength-bar.active:nth-child(3) { background: #c4a94d; }
+  .strength-bar.active:nth-child(4) { background: var(--green); }
+  .strength-label {
+    font-size: 11px;
+    color: var(--mid-gray);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     CHECKBOX
+     ═══════════════════════════════════════════════════════════════ */
+  .checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .checkbox {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--light-gray);
+    border-radius: 5px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fff;
+  }
+  .checkbox.checked {
+    background: var(--orange);
+    border-color: var(--orange);
+  }
+  .checkbox.checked svg {
+    opacity: 1;
+  }
+  .checkbox svg {
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .checkbox-label {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+  }
+  .checkbox-label a {
+    color: var(--dark);
+    text-decoration: underline;
+    text-decoration-color: var(--light-gray);
+    text-underline-offset: 2px;
+    transition: text-decoration-color 0.2s;
+  }
+  .checkbox-label a:hover {
+    text-decoration-color: var(--dark);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ONBOARDING SCREENS
+     ═══════════════════════════════════════════════════════════════ */
+  .onboarding-illustration {
+    margin: 8px auto 32px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .onboarding-title {
+    font-family: var(--font-display);
+    font-size: 30px;
+    color: var(--dark);
+    font-weight: 400;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+  }
+
+  .onboarding-desc {
+    font-size: 14px;
+    color: #777;
+    line-height: 1.7;
+    max-width: 380px;
+    margin: 0 auto 32px;
+  }
+
+  /* Step dots */
+  .step-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+  .step-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--light-gray);
+    transition: all 0.3s;
+  }
+  .step-dot.active {
+    background: var(--orange);
+    width: 24px;
+    border-radius: 4px;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     PERMISSION CARDS
+     ═══════════════════════════════════════════════════════════════ */
+  .permission-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 28px;
+    text-align: left;
+  }
+
+  .permission-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 18px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--light-gray);
+    background: #fff;
+    transition: all 0.2s;
+  }
+  .permission-card:hover {
+    border-color: var(--orange);
+    background: #fffcfa;
+  }
+
+  .permission-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .permission-icon--mic {
+    background: linear-gradient(135deg, #fce8e0, #f5d8cc);
+  }
+  .permission-icon--access {
+    background: linear-gradient(135deg, #dfe8f5, #d0ddf0);
+  }
+
+  .permission-info h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 3px;
+  }
+  .permission-info p {
+    font-size: 12px;
+    color: var(--mid-gray);
+    line-height: 1.5;
+  }
+
+  .permission-status {
+    margin-left: auto;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--light-gray);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     SHORTCUT OPTIONS
+     ═══════════════════════════════════════════════════════════════ */
+  .shortcut-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .shortcut-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--light-gray);
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+  .shortcut-option:hover {
+    border-color: var(--mid-gray);
+  }
+  .shortcut-option.selected {
+    border-color: var(--orange);
+    background: #fffcfa;
+    box-shadow: 0 0 0 3px var(--orange-light);
+  }
+
+  .key-cap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 34px;
+    padding: 0 10px;
+    background: linear-gradient(180deg, #fafaf8 0%, #f0efe9 100%);
+    border: 1.5px solid var(--light-gray);
+    border-bottom-width: 3px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--dark);
+    font-family: var(--font-ui);
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+  }
+
+  .shortcut-option .option-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--dark);
+  }
+  .shortcut-option .option-hint {
+    font-size: 11px;
+    color: var(--mid-gray);
+    margin-top: 1px;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     LANGUAGE GRID
+     ═══════════════════════════════════════════════════════════════ */
+  .language-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+    text-align: left;
+  }
+
+  .language-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--light-gray);
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .language-item:hover {
+    border-color: var(--mid-gray);
+  }
+  .language-item.selected {
+    border-color: var(--orange);
+    background: #fffcfa;
+  }
+  .language-item .lang-flag {
+    font-size: 20px;
+    line-height: 1;
+  }
+  .language-item .lang-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--dark);
+  }
+  .language-item .lang-native {
+    font-size: 11px;
+    color: var(--mid-gray);
+  }
+
+  .language-note {
+    font-size: 12px;
+    color: var(--mid-gray);
+    margin-bottom: 24px;
+    font-style: italic;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     READY SCREEN
+     ═══════════════════════════════════════════════════════════════ */
+  .demo-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    background: var(--dark);
+    border-radius: 100px;
+    margin: 20px auto;
+    box-shadow: 0 8px 24px rgba(20,20,19,0.25);
+  }
+  .demo-pill .pill-wave {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .demo-pill .pill-wave span {
+    display: block;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--orange);
+    animation: wave 1s ease-in-out infinite;
+  }
+  .demo-pill .pill-wave span:nth-child(1) { height: 8px; animation-delay: 0s; }
+  .demo-pill .pill-wave span:nth-child(2) { height: 14px; animation-delay: 0.15s; }
+  .demo-pill .pill-wave span:nth-child(3) { height: 10px; animation-delay: 0.3s; }
+  .demo-pill .pill-wave span:nth-child(4) { height: 16px; animation-delay: 0.1s; }
+  .demo-pill .pill-wave span:nth-child(5) { height: 8px; animation-delay: 0.25s; }
+  .demo-pill .pill-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--light);
+  }
+
+  @keyframes wave {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(0.4); }
+  }
+
+  .try-instruction {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+  }
+  .try-instruction .key-cap {
+    font-size: 11px;
+    min-width: 32px;
+    height: 28px;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     SKIP / SECONDARY LINK
+     ═══════════════════════════════════════════════════════════════ */
+  .skip-link {
+    display: inline-block;
+    font-size: 13px;
+    color: var(--mid-gray);
+    text-decoration: none;
+    font-weight: 500;
+    margin-top: 12px;
+    transition: color 0.2s;
+    cursor: pointer;
+  }
+  .skip-link:hover {
+    color: var(--dark);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     ANIMATIONS
+     ═══════════════════════════════════════════════════════════════ */
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  @keyframes pulse-ring {
+    0% { transform: scale(1); opacity: 0.4; }
+    100% { transform: scale(1.6); opacity: 0; }
+  }
+
+  @keyframes check-draw {
+    0% { stroke-dashoffset: 24; }
+    100% { stroke-dashoffset: 0; }
+  }
+
+  .float-anim {
+    animation: float 4s ease-in-out infinite;
+  }
+
+  /* Waveform animation for welcome screen */
+  .welcome-wave-bar {
+    animation: wave 1.2s ease-in-out infinite;
+  }
+
+  /* Section divider on canvas */
+  .canvas-divider {
+    width: 60px;
+    height: 1px;
+    background: #333;
+    margin: 12px auto 48px;
+  }
+
+  /* Flow arrow connector */
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 0;
+  }
+  .flow-arrow svg {
+    opacity: 0.3;
+  }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <!-- ════════════════════════════════════════════════════════════
+       HEADER
+       ════════════════════════════════════════════════════════════ -->
+  <div class="canvas-title"><h1>Typeless — Login & Welcome Flow</h1></div>
+  <div class="canvas-subtitle">Complete authentication and onboarding experience &middot; 7 screens</div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       AUTH SCREENS
+       ════════════════════════════════════════════════════════════ -->
+  <div class="section-label">Authentication</div>
+
+  <div class="artboard-row">
+
+    <!-- ── LOGIN ───────────────────────────────────────────────── -->
+    <div class="artboard-container">
+      <div class="artboard-label">1 &mdash; Login</div>
+      <div class="window window--narrow">
+        <div class="window-chrome">
+          <div class="traffic-lights">
+            <div class="traffic-light traffic-light--close"></div>
+            <div class="traffic-light traffic-light--minimize"></div>
+            <div class="traffic-light traffic-light--maximize"></div>
+          </div>
+          <span class="window-title">Typeless</span>
+        </div>
+        <div class="window-body">
+
+          <!-- Brand -->
+          <div class="brand">
+            <div class="logo-mark"><span>T</span></div>
+            <div class="brand-name">Typeless</div>
+            <div class="brand-tagline">Speak, don't type</div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-input" type="email" placeholder="you@example.com"/>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="form-input-wrap">
+              <input class="form-input" type="password" placeholder="Enter your password" style="padding-right:44px"/>
+              <button class="input-toggle" title="Show password">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Forgot password -->
+          <div class="form-row">
+            <a href="#" class="form-link">Forgot password?</a>
+          </div>
+
+          <!-- Sign In -->
+          <button class="btn btn--primary">Sign In</button>
+
+          <!-- Divider -->
+          <div class="divider"><span>or continue with</span></div>
+
+          <!-- Social -->
+          <div class="social-row">
+            <button class="btn btn--social">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.77.42 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+              Google
+            </button>
+            <button class="btn btn--social">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+              Apple
+            </button>
+          </div>
+
+          <!-- Footer -->
+          <div class="form-footer">
+            Don't have an account? <a href="#">Create one</a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SIGNUP ──────────────────────────────────────────────── -->
+    <div class="artboard-container">
+      <div class="artboard-label">2 &mdash; Sign Up</div>
+      <div class="window window--narrow">
+        <div class="window-chrome">
+          <div class="traffic-lights">
+            <div class="traffic-light traffic-light--close"></div>
+            <div class="traffic-light traffic-light--minimize"></div>
+            <div class="traffic-light traffic-light--maximize"></div>
+          </div>
+          <span class="window-title">Typeless</span>
+        </div>
+        <div class="window-body">
+
+          <!-- Brand -->
+          <div class="brand">
+            <div class="logo-mark"><span>T</span></div>
+            <div class="brand-name">Create Account</div>
+            <div class="brand-tagline">Start your voice-first journey</div>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-input" type="email" placeholder="you@example.com"/>
+          </div>
+
+          <!-- Password with strength -->
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="form-input-wrap">
+              <input class="form-input" type="password" placeholder="Create a strong password" style="padding-right:44px"/>
+              <button class="input-toggle" title="Show password">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="password-strength">
+              <div class="strength-bar active"></div>
+              <div class="strength-bar active"></div>
+              <div class="strength-bar active"></div>
+              <div class="strength-bar"></div>
+            </div>
+            <div class="strength-label">Good strength</div>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="form-group">
+            <label class="form-label">Confirm Password</label>
+            <input class="form-input" type="password" placeholder="Re-enter your password"/>
+          </div>
+
+          <!-- Terms -->
+          <div class="checkbox-row">
+            <div class="checkbox checked">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="checkbox-label">
+              I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+            </div>
+          </div>
+
+          <!-- Create Account -->
+          <button class="btn btn--primary">Create Account</button>
+
+          <!-- Footer -->
+          <div class="form-footer" style="margin-top:20px">
+            Already have an account? <a href="#">Sign in</a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       ONBOARDING SCREENS
+       ════════════════════════════════════════════════════════════ -->
+  <div class="section-label" style="margin-top:20px">Onboarding — Welcome Flow</div>
+
+  <!-- ── STEP 1: WELCOME ──────────────────────────────────────── -->
+  <div class="artboard-row">
+    <div class="artboard-container">
+      <div class="artboard-label">3 &mdash; Welcome</div>
+      <div class="window window--wide">
+        <div class="window-chrome">
+          <div class="traffic-lights">
+            <div class="traffic-light traffic-light--close"></div>
+            <div class="traffic-light traffic-light--minimize"></div>
+            <div class="traffic-light traffic-light--maximize"></div>
+          </div>
+          <span class="window-title">Welcome</span>
+        </div>
+        <div class="window-body window-body--onboarding">
+
+          <!-- Waveform illustration -->
+          <div class="onboarding-illustration">
+            <svg width="280" height="100" viewBox="0 0 280 100" fill="none" class="float-anim">
+              <!-- Sound wave visualization -->
+              <rect x="10" y="40" width="6" height="20" rx="3" fill="#e8e6dc">
+                <animate attributeName="height" values="20;40;20" dur="1.5s" repeatCount="indefinite" begin="0s"/>
+                <animate attributeName="y" values="40;30;40" dur="1.5s" repeatCount="indefinite" begin="0s"/>
+              </rect>
+              <rect x="24" y="30" width="6" height="40" rx="3" fill="#d97757" opacity="0.7">
+                <animate attributeName="height" values="40;60;40" dur="1.5s" repeatCount="indefinite" begin="0.1s"/>
+                <animate attributeName="y" values="30;20;30" dur="1.5s" repeatCount="indefinite" begin="0.1s"/>
+              </rect>
+              <rect x="38" y="25" width="6" height="50" rx="3" fill="#d97757" opacity="0.85">
+                <animate attributeName="height" values="50;30;50" dur="1.5s" repeatCount="indefinite" begin="0.2s"/>
+                <animate attributeName="y" values="25;35;25" dur="1.5s" repeatCount="indefinite" begin="0.2s"/>
+              </rect>
+              <rect x="52" y="15" width="6" height="70" rx="3" fill="#d97757">
+                <animate attributeName="height" values="70;45;70" dur="1.5s" repeatCount="indefinite" begin="0.15s"/>
+                <animate attributeName="y" values="15;27;15" dur="1.5s" repeatCount="indefinite" begin="0.15s"/>
+              </rect>
+              <rect x="66" y="22" width="6" height="56" rx="3" fill="#d97757" opacity="0.9">
+                <animate attributeName="height" values="56;75;56" dur="1.5s" repeatCount="indefinite" begin="0.25s"/>
+                <animate attributeName="y" values="22;12;22" dur="1.5s" repeatCount="indefinite" begin="0.25s"/>
+              </rect>
+              <rect x="80" y="30" width="6" height="40" rx="3" fill="#d97757" opacity="0.75">
+                <animate attributeName="height" values="40;55;40" dur="1.5s" repeatCount="indefinite" begin="0.3s"/>
+                <animate attributeName="y" values="30;22;30" dur="1.5s" repeatCount="indefinite" begin="0.3s"/>
+              </rect>
+              <rect x="94" y="20" width="6" height="60" rx="3" fill="#d97757" opacity="0.95">
+                <animate attributeName="height" values="60;35;60" dur="1.5s" repeatCount="indefinite" begin="0.12s"/>
+                <animate attributeName="y" values="20;32;20" dur="1.5s" repeatCount="indefinite" begin="0.12s"/>
+              </rect>
+              <rect x="108" y="10" width="6" height="80" rx="3" fill="#d97757">
+                <animate attributeName="height" values="80;50;80" dur="1.5s" repeatCount="indefinite" begin="0.2s"/>
+                <animate attributeName="y" values="10;25;10" dur="1.5s" repeatCount="indefinite" begin="0.2s"/>
+              </rect>
+              <rect x="122" y="18" width="6" height="64" rx="3" fill="#d97757" opacity="0.85">
+                <animate attributeName="height" values="64;80;64" dur="1.5s" repeatCount="indefinite" begin="0.28s"/>
+                <animate attributeName="y" values="18;10;18" dur="1.5s" repeatCount="indefinite" begin="0.28s"/>
+              </rect>
+              <rect x="136" y="5" width="6" height="90" rx="3" fill="#d97757">
+                <animate attributeName="height" values="90;55;90" dur="1.5s" repeatCount="indefinite" begin="0.18s"/>
+                <animate attributeName="y" values="5;22;5" dur="1.5s" repeatCount="indefinite" begin="0.18s"/>
+              </rect>
+              <rect x="150" y="18" width="6" height="64" rx="3" fill="#d97757" opacity="0.85">
+                <animate attributeName="height" values="64;80;64" dur="1.5s" repeatCount="indefinite" begin="0.22s"/>
+                <animate attributeName="y" values="18;10;18" dur="1.5s" repeatCount="indefinite" begin="0.22s"/>
+              </rect>
+              <rect x="164" y="10" width="6" height="80" rx="3" fill="#d97757">
+                <animate attributeName="height" values="80;50;80" dur="1.5s" repeatCount="indefinite" begin="0.1s"/>
+                <animate attributeName="y" values="10;25;10" dur="1.5s" repeatCount="indefinite" begin="0.1s"/>
+              </rect>
+              <rect x="178" y="20" width="6" height="60" rx="3" fill="#d97757" opacity="0.95">
+                <animate attributeName="height" values="60;35;60" dur="1.5s" repeatCount="indefinite" begin="0.32s"/>
+                <animate attributeName="y" values="20;32;20" dur="1.5s" repeatCount="indefinite" begin="0.32s"/>
+              </rect>
+              <rect x="192" y="30" width="6" height="40" rx="3" fill="#d97757" opacity="0.75">
+                <animate attributeName="height" values="40;60;40" dur="1.5s" repeatCount="indefinite" begin="0.15s"/>
+                <animate attributeName="y" values="30;20;30" dur="1.5s" repeatCount="indefinite" begin="0.15s"/>
+              </rect>
+              <rect x="206" y="22" width="6" height="56" rx="3" fill="#d97757" opacity="0.9">
+                <animate attributeName="height" values="56;30;56" dur="1.5s" repeatCount="indefinite" begin="0.25s"/>
+                <animate attributeName="y" values="22;35;22" dur="1.5s" repeatCount="indefinite" begin="0.25s"/>
+              </rect>
+              <rect x="220" y="15" width="6" height="70" rx="3" fill="#d97757">
+                <animate attributeName="height" values="70;45;70" dur="1.5s" repeatCount="indefinite" begin="0.3s"/>
+                <animate attributeName="y" values="15;27;15" dur="1.5s" repeatCount="indefinite" begin="0.3s"/>
+              </rect>
+              <rect x="234" y="25" width="6" height="50" rx="3" fill="#d97757" opacity="0.85">
+                <animate attributeName="height" values="50;30;50" dur="1.5s" repeatCount="indefinite" begin="0.08s"/>
+                <animate attributeName="y" values="25;35;25" dur="1.5s" repeatCount="indefinite" begin="0.08s"/>
+              </rect>
+              <rect x="248" y="30" width="6" height="40" rx="3" fill="#d97757" opacity="0.7">
+                <animate attributeName="height" values="40;20;40" dur="1.5s" repeatCount="indefinite" begin="0.2s"/>
+                <animate attributeName="y" values="30;40;30" dur="1.5s" repeatCount="indefinite" begin="0.2s"/>
+              </rect>
+              <rect x="262" y="40" width="6" height="20" rx="3" fill="#e8e6dc">
+                <animate attributeName="height" values="20;40;20" dur="1.5s" repeatCount="indefinite" begin="0.35s"/>
+                <animate attributeName="y" values="40;30;40" dur="1.5s" repeatCount="indefinite" begin="0.35s"/>
+              </rect>
+            </svg>
+          </div>
+
+          <h2 class="onboarding-title">Welcome to Typeless</h2>
+          <p class="onboarding-desc">
+            Your voice is about to become your most powerful tool. Typeless turns your natural speech into polished, professional text — 4x faster than typing.
+          </p>
+
+          <div class="step-dots">
+            <div class="step-dot active"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+          </div>
+
+          <button class="btn btn--primary" style="max-width:260px; margin:0 auto;">Get Started</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: PERMISSIONS ────────────────────────────────── -->
+    <div class="artboard-container">
+      <div class="artboard-label">4 &mdash; Permissions</div>
+      <div class="window window--wide">
+        <div class="window-chrome">
+          <div class="traffic-lights">
+            <div class="traffic-light traffic-light--close"></div>
+            <div class="traffic-light traffic-light--minimize"></div>
+            <div class="traffic-light traffic-light--maximize"></div>
+          </div>
+          <span class="window-title">Setup</span>
+        </div>
+        <div class="window-body window-body--onboarding">
+
+          <!-- Mic illustration -->
+          <div class="onboarding-illustration">
+            <svg width="88" height="88" viewBox="0 0 88 88" fill="none">
+              <!-- Outer rings -->
+              <circle cx="44" cy="44" r="43" stroke="#e8e6dc" stroke-width="1.5" stroke-dasharray="4 4"/>
+              <circle cx="44" cy="44" r="34" stroke="#e8e6dc" stroke-width="1"/>
+              <!-- Pulse ring -->
+              <circle cx="44" cy="44" r="28" fill="none" stroke="#d97757" stroke-width="1" opacity="0.3">
+                <animate attributeName="r" values="28;38;28" dur="2s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/>
+              </circle>
+              <!-- Mic body -->
+              <rect x="36" y="22" width="16" height="28" rx="8" fill="#d97757"/>
+              <!-- Mic arc -->
+              <path d="M30 44c0 7.73 6.27 14 14 14s14-6.27 14-14" stroke="#d97757" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+              <!-- Mic stand -->
+              <line x1="44" y1="58" x2="44" y2="66" stroke="#d97757" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="37" y1="66" x2="51" y2="66" stroke="#d97757" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+
+          <h2 class="onboarding-title">We need a few permissions</h2>
+          <p class="onboarding-desc" style="margin-bottom:24px">
+            To transcribe your voice and insert text anywhere, Typeless needs access to your microphone and system accessibility. Your audio is processed locally and never stored.
+          </p>
+
+          <div class="permission-cards">
+            <div class="permission-card">
+              <div class="permission-icon permission-icon--mic">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97757" stroke-width="2" stroke-linecap="round"><rect x="9" y="2" width="6" height="14" rx="3"/><path d="M5 10c0 4.42 3.13 8 7 8s7-3.58 7-8"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
+              </div>
+              <div class="permission-info">
+                <h4>Microphone Access</h4>
+                <p>Required for voice dictation. Audio stays on-device.</p>
+              </div>
+              <div class="permission-status"></div>
+            </div>
+            <div class="permission-card">
+              <div class="permission-icon permission-icon--access">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6a9bcc" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+              </div>
+              <div class="permission-info">
+                <h4>Accessibility</h4>
+                <p>Allows text insertion into any application via keyboard simulation.</p>
+              </div>
+              <div class="permission-status"></div>
+            </div>
+          </div>
+
+          <div class="step-dots">
+            <div class="step-dot"></div>
+            <div class="step-dot active"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+          </div>
+
+          <button class="btn btn--primary" style="max-width:260px; margin:0 auto;">Grant Permissions</button>
+          <br/>
+          <a class="skip-link">Set up later</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 3 & 4 ──────────────────────────────────────────── -->
+  <div class="artboard-row">
+
+    <!-- ── STEP 3: SHORTCUT SETUP ─────────────────────────────── -->
+    <div class="artboard-container">
+      <div class="artboard-label">5 &mdash; Shortcut</div>
+      <div class="window window--wide">
+        <div class="window-chrome">
+          <div class="traffic-lights">
+            <div class="traffic-light traffic-light--close"></div>
+            <div class="traffic-light traffic-light--minimize"></div>
+            <div class="traffic-light traffic-light--maximize"></div>
+          </div>
+          <span class="window-title">Setup</span>
+        </div>
+        <div class="window-body window-body--onboarding">
+
+          <!-- Keyboard illustration -->
+          <div class="onboarding-illustration">
+            <svg width="120" height="80" viewBox="0 0 120 80" fill="none">
+              <!-- Key shadow -->
+              <rect x="22" y="10" width="76" height="56" rx="12" fill="#e8e6dc"/>
+              <!-- Key body -->
+              <rect x="20" y="6" width="76" height="56" rx="12" fill="white" stroke="#e8e6dc" stroke-width="1.5"/>
+              <!-- Key highlight -->
+              <rect x="24" y="10" width="68" height="44" rx="8" fill="#faf9f5"/>
+              <!-- Fn text -->
+              <text x="58" y="38" text-anchor="middle" font-family="DM Sans, sans-serif" font-weight="700" font-size="18" fill="#d97757">Fn</text>
+              <!-- Press indicator -->
+              <circle cx="58" cy="52" r="3" fill="#d97757" opacity="0.4">
+                <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.5s" repeatCount="indefinite"/>
+              </circle>
+            </svg>
+          </div>
+
+          <h2 class="onboarding-title">Set your activation shortcut</h2>
+          <p class="onboarding-desc" style="margin-bottom:24px">
+            Press and hold your shortcut key to start dictating. Release to process your speech into text.
+          </p>
+
+          <div class="shortcut-options">
+            <div class="shortcut-option selected">
+              <div class="key-cap">Fn</div>
+              <div>
+                <div class="option-label">Function Key</div>
+                <div class="option-hint">Recommended</div>
+              </div>
+            </div>
+            <div class="shortcut-option">
+              <div class="key-cap">&#8984; R</div>
+              <div>
+                <div class="option-label">Right Command</div>
+                <div class="option-hint">Mac only</div>
+              </div>
+            </div>
+            <div class="shortcut-option">
+              <div class="key-cap">Alt R</div>
+              <div>
+                <div class="option-label">Right Alt</div>
+                <div class="option-hint">Windows</div>
+              </div>
+            </div>
+            <div class="shortcut-option">
+              <div class="key-cap" style="font-size:14px">...</div>
+              <div>
+                <div class="option-label">Custom</div>
+                <div class="option-hint">Choose your own</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-dots">
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot active"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+          </div>
+
+          <button class="btn btn--primary" style="max-width:260px; margin:0 auto;">Continue</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 4: LANGUAGE ───────────────────────────────────── -->
+    <div class="artboard-container">
+      <div class="artboard-label">6 &mdash; Language</div>
+      <div class="window window--wide">
+        <div class="window-chrome">
+          <div class="traffic-lights">
+            <div class="traffic-light traffic-light--close"></div>
+            <div class="traffic-light traffic-light--minimize"></div>
+            <div class="traffic-light traffic-light--maximize"></div>
+          </div>
+          <span class="window-title">Setup</span>
+        </div>
+        <div class="window-body window-body--onboarding">
+
+          <!-- Globe illustration -->
+          <div class="onboarding-illustration">
+            <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+              <circle cx="40" cy="40" r="32" stroke="#d97757" stroke-width="2" opacity="0.2"/>
+              <circle cx="40" cy="40" r="32" stroke="#d97757" stroke-width="2" stroke-dasharray="4 2" opacity="0.4">
+                <animateTransform attributeName="transform" type="rotate" values="0 40 40;360 40 40" dur="30s" repeatCount="indefinite"/>
+              </circle>
+              <!-- Meridians -->
+              <ellipse cx="40" cy="40" rx="16" ry="32" stroke="#d97757" stroke-width="1.5" opacity="0.5"/>
+              <ellipse cx="40" cy="40" rx="28" ry="32" stroke="#d97757" stroke-width="1" opacity="0.3"/>
+              <!-- Parallels -->
+              <ellipse cx="40" cy="28" rx="28" ry="6" stroke="#d97757" stroke-width="1" opacity="0.3"/>
+              <line x1="8" y1="40" x2="72" y2="40" stroke="#d97757" stroke-width="1.5" opacity="0.4"/>
+              <ellipse cx="40" cy="52" rx="28" ry="6" stroke="#d97757" stroke-width="1" opacity="0.3"/>
+              <!-- Center dot -->
+              <circle cx="40" cy="40" r="3" fill="#d97757" opacity="0.6"/>
+            </svg>
+          </div>
+
+          <h2 class="onboarding-title">Choose your primary language</h2>
+          <p class="onboarding-desc" style="margin-bottom:20px">
+            Select the language you speak most often. You can always change this later.
+          </p>
+
+          <div class="language-grid">
+            <div class="language-item selected">
+              <span class="lang-flag">🇺🇸</span>
+              <div>
+                <div class="lang-name">English</div>
+              </div>
+            </div>
+            <div class="language-item">
+              <span class="lang-flag">🇨🇳</span>
+              <div>
+                <div class="lang-name">中文</div>
+              </div>
+            </div>
+            <div class="language-item">
+              <span class="lang-flag">🇪🇸</span>
+              <div>
+                <div class="lang-name">Español</div>
+              </div>
+            </div>
+            <div class="language-item">
+              <span class="lang-flag">🇫🇷</span>
+              <div>
+                <div class="lang-name">Français</div>
+              </div>
+            </div>
+            <div class="language-item">
+              <span class="lang-flag">🇩🇪</span>
+              <div>
+                <div class="lang-name">Deutsch</div>
+              </div>
+            </div>
+            <div class="language-item">
+              <span class="lang-flag">🇯🇵</span>
+              <div>
+                <div class="lang-name">日本語</div>
+              </div>
+            </div>
+            <div class="language-item">
+              <span class="lang-flag">🇰🇷</span>
+              <div>
+                <div class="lang-name">한국어</div>
+              </div>
+            </div>
+            <div class="language-item">
+              <span class="lang-flag">🇧🇷</span>
+              <div>
+                <div class="lang-name">Português</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="language-note">Typeless supports 100+ languages with auto-detection</div>
+
+          <div class="step-dots">
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot active"></div>
+            <div class="step-dot"></div>
+          </div>
+
+          <button class="btn btn--primary" style="max-width:260px; margin:0 auto;">Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 5: READY ────────────────────────────────────────── -->
+  <div class="artboard-row">
+    <div class="artboard-container">
+      <div class="artboard-label">7 &mdash; Ready</div>
+      <div class="window window--wide">
+        <div class="window-chrome">
+          <div class="traffic-lights">
+            <div class="traffic-light traffic-light--close"></div>
+            <div class="traffic-light traffic-light--minimize"></div>
+            <div class="traffic-light traffic-light--maximize"></div>
+          </div>
+          <span class="window-title">Typeless</span>
+        </div>
+        <div class="window-body window-body--onboarding">
+
+          <!-- Celebration illustration -->
+          <div class="onboarding-illustration">
+            <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+              <!-- Confetti particles -->
+              <rect x="18" y="20" width="4" height="4" rx="1" fill="#d97757" opacity="0.6" transform="rotate(30 20 22)">
+                <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" begin="0s"/>
+              </rect>
+              <rect x="75" y="15" width="3" height="6" rx="1.5" fill="#6a9bcc" opacity="0.5" transform="rotate(-20 76.5 18)">
+                <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+              </rect>
+              <circle cx="82" cy="40" r="2.5" fill="#788c5d" opacity="0.5">
+                <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="0.6s"/>
+              </circle>
+              <rect x="12" y="55" width="5" height="3" rx="1.5" fill="#6a9bcc" opacity="0.4" transform="rotate(45 14.5 56.5)">
+                <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite" begin="0.8s"/>
+              </rect>
+              <circle cx="85" cy="65" r="2" fill="#d97757" opacity="0.4">
+                <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite" begin="0.4s"/>
+              </circle>
+              <rect x="25" y="80" width="3" height="3" rx="1" fill="#788c5d" opacity="0.5" transform="rotate(15 26.5 81.5)">
+                <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" begin="1s"/>
+              </rect>
+              <circle cx="72" cy="82" r="2" fill="#6a9bcc" opacity="0.4">
+                <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+              </circle>
+
+              <!-- Success circle -->
+              <circle cx="50" cy="50" r="30" fill="#faf9f5" stroke="#788c5d" stroke-width="2.5"/>
+              <!-- Checkmark -->
+              <path d="M36 50L46 60L64 40" stroke="#788c5d" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+          </div>
+
+          <h2 class="onboarding-title">You're all set!</h2>
+          <p class="onboarding-desc" style="margin-bottom:16px">
+            Typeless is ready to go. Try it out — your voice is your new superpower.
+          </p>
+
+          <!-- Try it instruction -->
+          <div class="try-instruction">
+            Press and hold <span class="key-cap">Fn</span> and start speaking
+          </div>
+
+          <!-- Demo pill -->
+          <div>
+            <div class="demo-pill">
+              <div class="pill-wave">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <span class="pill-text">Listening...</span>
+            </div>
+          </div>
+
+          <div style="height:20px"></div>
+
+          <div class="step-dots">
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot"></div>
+            <div class="step-dot active"></div>
+          </div>
+
+          <button class="btn btn--primary" style="max-width:280px; margin:0 auto;">Start Using Typeless</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer note -->
+  <div style="text-align:center; padding:40px 0 0;">
+    <div style="color:#333; font-size:12px; letter-spacing:1px; text-transform:uppercase; font-weight:500;">End of Flow</div>
+    <div style="color:#555; font-size:12px; margin-top:8px;">Typeless &middot; Login & Onboarding &middot; 7 Screens</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     INTERACTIVE BEHAVIORS
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+  // Toggle password visibility
+  document.querySelectorAll('.input-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = btn.parentElement.querySelector('.form-input');
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      btn.innerHTML = isPassword
+        ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+        : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    });
+  });
+
+  // Toggle checkbox
+  document.querySelectorAll('.checkbox').forEach(cb => {
+    cb.addEventListener('click', () => {
+      cb.classList.toggle('checked');
+    });
+  });
+
+  // Shortcut option selection
+  document.querySelectorAll('.shortcut-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.shortcut-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+    });
+  });
+
+  // Language selection
+  document.querySelectorAll('.language-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.language-item').forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#0f0f0f"/>
+      <stop offset="100%" stop-color="#1a1a1a"/>
+    </linearGradient>
+    <linearGradient id="mic" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#d4d4d4"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.02"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#bg)"/>
+
+  <!-- Subtle ring behind mic -->
+  <circle cx="256" cy="232" r="120" fill="none" stroke="url(#ring)" stroke-width="1.5"/>
+  <circle cx="256" cy="232" r="88" fill="none" stroke="url(#ring)" stroke-width="1"/>
+
+  <!-- Microphone body -->
+  <rect x="224" y="148" width="64" height="108" rx="32" ry="32" fill="url(#mic)"/>
+
+  <!-- Microphone cradle arc -->
+  <path d="M204 240 Q204 296 256 296 Q308 296 308 240" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Microphone stand -->
+  <line x1="256" y1="296" x2="256" y2="340" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Stand base -->
+  <line x1="228" y1="340" x2="284" y2="340" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Sound wave arcs (right side) -->
+  <path d="M320 200 Q340 232 320 264" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+  <path d="M340 184 Q368 232 340 280" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity="0.18"/>
+  <path d="M358 170 Q394 232 358 294" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.08"/>
+
+  <!-- Sound wave arcs (left side) -->
+  <path d="M192 200 Q172 232 192 264" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+  <path d="M172 184 Q144 232 172 280" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity="0.18"/>
+  <path d="M154 170 Q118 232 154 294" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.08"/>
+
+  <!-- Backtick hint at bottom -->
+  <text x="256" y="410" text-anchor="middle" font-family="-apple-system, 'SF Mono', 'Menlo', monospace" font-size="32" font-weight="400" fill="rgba(255,255,255,0.2)">`</text>
+</svg>

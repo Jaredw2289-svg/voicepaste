@@ -1,0 +1,331 @@
+@import "tailwindcss";
+
+:root {
+  /* Design tokens from Pencil */
+  --canvas-dark: #0e0e0d;
+  --dark: #141413;
+  --green: #788c5d;
+  --light: #faf9f5;
+  --light-gray: #e8e6dc;
+  --mid-gray: #b0aea5;
+  --orange: #d97757;
+  --orange-hover: #c4684a;
+  --orange-light: #f5e6df;
+  --red: #e05252;
+}
+
+@layer base {
+  html, body {
+    height: 100%;
+    scroll-behavior: smooth;
+  }
+
+  .font-serif-display {
+    font-family: var(--font-instrument-serif), "Instrument Serif", serif;
+  }
+
+  .font-body {
+    font-family: var(--font-dm-sans), "DM Sans", sans-serif;
+  }
+
+  .font-mono-display {
+    font-family: var(--font-ibm-plex-mono), "IBM Plex Mono", monospace;
+  }
+
+  .font-lora {
+    font-family: var(--font-lora), "Lora", "Georgia", serif;
+  }
+
+  .font-poppins {
+    font-family: var(--font-poppins), "Poppins", sans-serif;
+  }
+}
+
+/* ─── Hero enter animation ─── */
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-enter {
+  opacity: 0;
+  animation: hero-enter 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Scroll-triggered fade-in ─── */
+.fade-in {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── Staggered slide-up ─── */
+.slide-up {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── Slide in from left ─── */
+.slide-in-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-in-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ─── Slide in from right ─── */
+.slide-in-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-in-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ─── Scale fade in ─── */
+.scale-in {
+  opacity: 0;
+  transform: scale(0.95);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scale-in.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ─── Waveform animation ─── */
+@keyframes waveform {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.4);
+  }
+}
+
+/* ─── Floating / breathing decoration ─── */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+}
+
+@keyframes breathe {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.25;
+    transform: scale(1.05);
+  }
+}
+
+/* ─── Typing cursor blink ─── */
+@keyframes cursor-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ─── Count-up number pulse ─── */
+@keyframes number-pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ─── Testimonial carousel slide ─── */
+@keyframes carousel-slide {
+  0%, 30% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  33%, 63% {
+    transform: translateX(-100%);
+    opacity: 1;
+  }
+  66%, 96% {
+    transform: translateX(-200%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ─── Subtle gradient shift on hover ─── */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* ─── Glow pulse for demo container ─── */
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.02);
+  }
+}
+
+/* ─── VibeCodingDemo keyframes ─── */
+@keyframes organicWave {
+  0% { height: 3px; }
+  50% { height: 18px; }
+  100% { height: 5px; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@keyframes termIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes codeIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ─── Shield pulse for privacy page ─── */
+@keyframes shield-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(120, 140, 93, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 20px rgba(120, 140, 93, 0);
+  }
+}
+
+/* ─── Timeline dot pulse ─── */
+@keyframes dot-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(120, 140, 93, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(120, 140, 93, 0);
+  }
+}
+
+/* ─── Check mark draw ─── */
+@keyframes check-draw {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ─── Data flow line ─── */
+@keyframes flow-line {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .hero-enter,
+  .fade-in,
+  .slide-up,
+  .slide-in-left,
+  .slide-in-right,
+  .scale-in {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}

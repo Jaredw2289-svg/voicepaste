@@ -1,0 +1,239 @@
+/* VoicePaste design tokens */
+:root {
+  --color-primary: #1D1A1A;
+  --color-bg: #F5F5F5;
+  --color-orange: #d97757;
+  --color-blue: #3B82F6;
+  --color-green: #22C55E;
+  --color-red: #EF4444;
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-app-region: no-drag;
+}
+
+/* Overlay container - full transparent window */
+.overlay-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 12px;
+  background: transparent;
+}
+
+/* Wrapper for transcript card + pill (vertical stack) */
+.overlay-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* Transcript card above the pill */
+.transcript-card {
+  width: 360px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--color-primary);
+  border-radius: 16px 16px 0 0;
+  padding: 12px 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  animation: card-expand 0.2s ease-out;
+}
+
+/* Subtle scrollbar for transcript */
+.transcript-card::-webkit-scrollbar {
+  width: 4px;
+}
+.transcript-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+.transcript-card::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+.transcript-text {
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  font-family: var(--font-family);
+  word-wrap: break-word;
+}
+
+/* Blinking orange cursor at end of text */
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 14px;
+  background: var(--color-orange);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes card-expand {
+  from {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 200px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+}
+
+/* The floating pill status indicator */
+.overlay-pill {
+  position: relative;
+  width: 180px;
+  height: 34px;
+  background: var(--color-primary);
+  border-radius: 32px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  animation: pill-enter 0.2s ease-out;
+  overflow: hidden;
+  transition: width 0.2s ease-out, border-radius 0.2s ease-out;
+}
+
+/* When transcript card is visible above, merge pill into card */
+.transcript-card + .overlay-pill {
+  width: 360px;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+}
+
+.pill-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 20px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.pill-layer--active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@keyframes pill-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.overlay-text {
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.overlay-done {
+  color: var(--color-green);
+}
+
+.overlay-error {
+  color: var(--color-red);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Glass sweep overlay for transcribing state */
+.transcribe-sweep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 32px;
+  animation: sweep 6s linear forwards;
+  pointer-events: none;
+}
+
+@keyframes sweep {
+  0% { width: 0; }
+  15% { width: 80%; }
+  40% { width: 90%; }
+  100% { width: 92%; }
+}
+
+/* Cancel button (X) for recording */
+.cancel-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-app-region: no-drag;
+  pointer-events: auto; /* 🔧 确保可以点击 */
+  z-index: 10; /* 🔧 确保在最上层 */
+  flex-shrink: 0; /* 🔧 防止被压缩 */
+}
+
+.cancel-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.05);
+}
+
+.cancel-button:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.overlay-warning {
+  color: #d97757;
+}

@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-page: #faf9f5;
+    --bg-sidebar: #f0efea;
+    --bg-chrome: #f2f1ec;
+    --bg-card: #f0efea;
+    --bg-white: #ffffff;
+    --bg-refer: #dfe9f3;
+    --bg-affiliate: #f5e6df;
+    --bg-settings: #e8e5d8;
+    --text-primary: #141413;
+    --text-secondary: #8a8880;
+    --text-tertiary: #b0aea5;
+    --accent-orange: #d97757;
+    --accent-blue: #6a9bcc;
+    --accent-brown: #b8a88a;
+    --accent-green: #788c5d;
+    --border-light: #e8e6dc;
+    --border-card: #f0ede4;
+  }
+
+  html, body, #app {
+    height: 100%;
+    margin: 0;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+  }
+
+  .font-heading {
+    font-family: 'Instrument Serif', serif;
+  }
+
+  .font-sans {
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .font-mono {
+    font-family: 'IBM Plex Mono', monospace;
+  }
+}
