@@ -119,6 +119,14 @@ function initApp(): void {
   console.log('VoicePaste initialized. Press ` to start/stop recording.');
 }
 
+process.on('uncaughtException', (error) => {
+  console.error('[Main] Uncaught exception:', error);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[Main] Unhandled rejection:', reason);
+});
+
 app.on('ready', () => {
   initApp();
 });

@@ -79,7 +79,9 @@ export class RealtimeTranscriptionService extends EventEmitter {
           this.connectTimeoutId = null;
         }
         this.rejectConnect = null;
-        this.emit('error', err.message);
+        if (this.listenerCount('error') > 0) {
+          this.emit('error', err.message);
+        }
         reject(err);
       });
 
@@ -174,8 +176,10 @@ export class RealtimeTranscriptionService extends EventEmitter {
             this.pendingStop();
             this.pendingStop = null;
           }
-        } else {
+        } else if (this.listenerCount('error') > 0) {
           this.emit('error', errorMsg);
+        } else {
+          console.error('[Realtime] Unhandled server error (no listener):', errorMsg);
         }
         break;
       }

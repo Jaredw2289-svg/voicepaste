@@ -159,6 +159,15 @@ export class IPCHandler {
         this.realtimeService.on('error', (msg: string) => {
           console.error('[IPC] Realtime error:', msg);
           this.overlayWindow?.webContents.send(IPC_CHANNELS.REALTIME_ERROR, msg);
+          // Auto-recover: disconnect, reset state, return to idle
+          this.realtimeService?.disconnect();
+          this.realtimeService = null;
+          this.sessionManager?.scheduleReWarm();
+          this.sendStatus('error');
+          setTimeout(() => {
+            this.overlayWindow?.hide();
+            this.sendStatus('idle');
+          }, 2000);
         });
 
         console.log(`[IPC] Realtime session acquired (${Date.now() - t0}ms total)`);
