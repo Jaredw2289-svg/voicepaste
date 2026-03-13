@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC_CHANNELS } from './shared/constants';
-import type { AppStatus, ElectronAPI } from './shared/types';
+import type { AppStatus, ElectronAPI, RendererLogLevel } from './shared/types';
 
 const electronAPI: ElectronAPI = {
   onRecordingStart: (callback: () => void) => {
@@ -108,9 +108,9 @@ const electronAPI: ElectronAPI = {
     ipcRenderer.send(IPC_CHANNELS.REALTIME_RESIZE, width, height);
   },
 
-  // Diagnostic logging (renderer -> main, visible in terminal)
-  rendererLog: (msg: string) => {
-    ipcRenderer.send(IPC_CHANNELS.RENDERER_LOG, msg);
+  // Diagnostic logging (renderer -> main, persisted by the main-process logger)
+  rendererLog: (msg: string, level: RendererLogLevel = 'log', source = 'renderer') => {
+    ipcRenderer.send(IPC_CHANNELS.RENDERER_LOG, { msg, level, source });
   },
 };
 

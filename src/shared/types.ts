@@ -1,4 +1,5 @@
 export type AppStatus = 'idle' | 'recording' | 'transcribing' | 'done' | 'error';
+export type RendererLogLevel = 'log' | 'info' | 'warn' | 'error' | 'debug';
 
 export type PolishProvider = 'openai' | 'groq';
 
@@ -97,8 +98,8 @@ export interface ElectronAPI {
   statsGet: () => Promise<TranscriptionStatsResult>;
   onHistoryUpdated: (callback: () => void) => Disposer;
 
-  // Diagnostic logging (renderer -> main, visible in terminal)
-  rendererLog: (msg: string) => void;
+  // Diagnostic logging (renderer -> main, persisted by the main-process logger)
+  rendererLog: (msg: string, level?: RendererLogLevel, source?: string) => void;
 }
 
 declare global {

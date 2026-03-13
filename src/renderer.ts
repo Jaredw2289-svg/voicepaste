@@ -2,6 +2,9 @@ import './index.css';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './renderer/App';
+import { installRendererLogging } from './renderer/services/install-renderer-logging';
+
+installRendererLogging('overlay');
 
 const root = document.getElementById('app');
 if (root) {

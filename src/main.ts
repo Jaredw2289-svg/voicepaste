@@ -11,8 +11,12 @@ import { getConfig } from './main/config-store';
 import { IPC_CHANNELS } from './shared/constants';
 import { registerServiceIPC } from './main/service-ipc';
 import { RealtimeSessionManager } from './main/realtime-session-manager';
+import { getAppLogFilePath, initializeAppLogging } from './main/app-logger';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
+const logFilePath = initializeAppLogging();
+console.info(`[Main] Runtime log file: ${logFilePath}`);
+
 if (started) {
   app.quit();
 }
@@ -272,6 +276,10 @@ function configureSessionPermissions(): void {
     callback(false);
   });
 }
+
+app.on('ready', () => {
+  console.info(`[Main] App ready metadata: version=${app.getVersion()} packaged=${app.isPackaged} userData=${app.getPath('userData')} logs=${getAppLogFilePath()}`);
+});
 
 function initApp(): void {
   const config = getConfig();

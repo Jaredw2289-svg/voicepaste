@@ -10,7 +10,6 @@ const pcmRecorder = new PcmAudioRecorder();
 // Forward renderer logs to main process (visible in terminal)
 function rlog(msg: string) {
   console.log(msg);
-  try { window.electronAPI.rendererLog(msg); } catch { /* preload not ready */ }
 }
 
 function formatRecordingStartError(error: unknown): string {

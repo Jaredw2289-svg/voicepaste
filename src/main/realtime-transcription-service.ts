@@ -1,6 +1,35 @@
 import { EventEmitter } from 'events';
 import WebSocket from 'ws';
 
+type StopResolution =
+  | 'waiting'
+  | 'completed'
+  | 'failed_event'
+  | 'buffer_error'
+  | 'timeout'
+  | 'disconnect'
+  | 'no_audio'
+  | 'not_connected';
+
+export interface RealtimeDebugSnapshot {
+  isConnected: boolean;
+  audioChunksSent: number;
+  accumulatedTranscriptCount: number;
+  accumulatedTextPreview: string;
+  speechStartedCount: number;
+  speechStoppedCount: number;
+  transcriptCompletedCount: number;
+  transcriptDeltaCount: number;
+  lastTranscriptPreview: string | null;
+  lastDeltaPreview: string | null;
+  lastTranscriptionFailure: string | null;
+  lastServerError: string | null;
+  stopRequestedAt: number | null;
+  stopResolvedAt: number | null;
+  stopResolution: StopResolution | null;
+  recentEvents: string[];
+}
+
 /**
  * WebSocket client for OpenAI Realtime Transcription API.
  *
@@ -18,6 +47,18 @@ export class RealtimeTranscriptionService extends EventEmitter {
   private audioChunksSent = 0;
   private rejectConnect: ((err: Error) => void) | null = null;
   private connectTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private speechStartedCount = 0;
+  private speechStoppedCount = 0;
+  private transcriptCompletedCount = 0;
+  private transcriptDeltaCount = 0;
+  private lastTranscriptPreview: string | null = null;
+  private lastDeltaPreview: string | null = null;
+  private lastTranscriptionFailure: string | null = null;
+  private lastServerError: string | null = null;
+  private stopRequestedAt: number | null = null;
+  private stopResolvedAt: number | null = null;
+  private stopResolution: StopResolution | null = null;
+  private recentEvents: string[] = [];
 
   get isConnected(): boolean {
     return this.ws?.readyState === WebSocket.OPEN;
@@ -32,6 +73,27 @@ export class RealtimeTranscriptionService extends EventEmitter {
     return this.accumulatedTranscripts.join(' ');
   }
 
+  getDebugSnapshot(): RealtimeDebugSnapshot {
+    return {
+      isConnected: this.isConnected,
+      audioChunksSent: this.audioChunksSent,
+      accumulatedTranscriptCount: this.accumulatedTranscripts.length,
+      accumulatedTextPreview: this.getAccumulatedText().slice(0, 300),
+      speechStartedCount: this.speechStartedCount,
+      speechStoppedCount: this.speechStoppedCount,
+      transcriptCompletedCount: this.transcriptCompletedCount,
+      transcriptDeltaCount: this.transcriptDeltaCount,
+      lastTranscriptPreview: this.lastTranscriptPreview,
+      lastDeltaPreview: this.lastDeltaPreview,
+      lastTranscriptionFailure: this.lastTranscriptionFailure,
+      lastServerError: this.lastServerError,
+      stopRequestedAt: this.stopRequestedAt,
+      stopResolvedAt: this.stopResolvedAt,
+      stopResolution: this.stopResolution,
+      recentEvents: [...this.recentEvents],
+    };
+  }
+
   /** Remove the last accumulated transcript (used for filtering hallucinations) */
   popLastTranscript(): void {
     this.accumulatedTranscripts.pop();
@@ -41,6 +103,18 @@ export class RealtimeTranscriptionService extends EventEmitter {
     return new Promise((resolve, reject) => {
       this.accumulatedTranscripts = [];
       this.audioChunksSent = 0;
+      this.speechStartedCount = 0;
+      this.speechStoppedCount = 0;
+      this.transcriptCompletedCount = 0;
+      this.transcriptDeltaCount = 0;
+      this.lastTranscriptPreview = null;
+      this.lastDeltaPreview = null;
+      this.lastTranscriptionFailure = null;
+      this.lastServerError = null;
+      this.stopRequestedAt = null;
+      this.stopResolvedAt = null;
+      this.stopResolution = null;
+      this.recentEvents = [];
 
       const url = 'wss://api.openai.com/v1/realtime?intent=transcription';
       console.log('[Realtime] Connecting to:', url);
@@ -101,6 +175,7 @@ export class RealtimeTranscriptionService extends EventEmitter {
     resolveConnect: () => void,
   ): void {
     const type = event.type as string;
+    this.rememberEvent(type);
 
     // Log every event type for debugging
     console.log(`[Realtime] Event: ${type}`);
@@ -125,16 +200,20 @@ export class RealtimeTranscriptionService extends EventEmitter {
 
       case 'input_audio_buffer.speech_started':
         console.log('[Realtime] Speech started (VAD)');
+        this.speechStartedCount++;
         this.emit('speech_started');
         break;
 
       case 'input_audio_buffer.speech_stopped':
         console.log('[Realtime] Speech stopped (VAD)');
+        this.speechStoppedCount++;
         this.emit('speech_stopped');
         break;
 
       case 'conversation.item.input_audio_transcription.completed': {
         const text = (event.transcript as string)?.trim();
+        this.transcriptCompletedCount++;
+        this.lastTranscriptPreview = text ? text.slice(0, 200) : null;
         console.log(`[Realtime] Transcript completed: "${text ?? '(empty)'}"`);
         if (text) {
           this.accumulatedTranscripts.push(text);
@@ -142,6 +221,7 @@ export class RealtimeTranscriptionService extends EventEmitter {
         }
         // If we're stopping and waiting for the final transcript, resolve now
         if (this.stopping && this.pendingStop) {
+          this.markStopResolved('completed');
           console.log('[Realtime] Final transcript received during stop, resolving');
           this.pendingStop();
           this.pendingStop = null;
@@ -151,13 +231,21 @@ export class RealtimeTranscriptionService extends EventEmitter {
 
       case 'conversation.item.input_audio_transcription.delta': {
         const delta = (event.delta as string) ?? '';
+        this.transcriptDeltaCount++;
+        this.lastDeltaPreview = delta ? delta.slice(0, 200) : null;
         console.log(`[Realtime] Transcript delta: "${delta}"`);
         break;
       }
 
       case 'conversation.item.input_audio_transcription.failed': {
         const errorMsg = (event.error as Record<string, unknown>)?.message as string || 'Transcription failed';
+        this.lastTranscriptionFailure = errorMsg;
         console.error(`[Realtime] Transcription failed:`, errorMsg, JSON.stringify(event.error));
+        if (this.stopping && this.pendingStop) {
+          this.markStopResolved('failed_event');
+          this.pendingStop();
+          this.pendingStop = null;
+        }
         // Don't emit error for individual failures — the session continues
         break;
       }
@@ -172,9 +260,11 @@ export class RealtimeTranscriptionService extends EventEmitter {
 
       case 'error': {
         const errorMsg = (event.error as Record<string, unknown>)?.message as string || 'Unknown error';
+        this.lastServerError = errorMsg;
         console.error(`[Realtime] Server error:`, errorMsg, JSON.stringify(event.error));
         // Buffer-related errors (e.g. "buffer too small") are non-fatal — resolve pending stop
         if (errorMsg.toLowerCase().includes('buffer')) {
+          this.markStopResolved('buffer_error');
           console.log('[Realtime] Buffer error during stop, resolving gracefully');
           if (this.pendingStop) {
             this.pendingStop();
@@ -198,6 +288,18 @@ export class RealtimeTranscriptionService extends EventEmitter {
     }
   }
 
+  private rememberEvent(type: string): void {
+    this.recentEvents.push(type);
+    if (this.recentEvents.length > 25) {
+      this.recentEvents.splice(0, this.recentEvents.length - 25);
+    }
+  }
+
+  private markStopResolved(reason: StopResolution): void {
+    this.stopResolution = reason;
+    this.stopResolvedAt = Date.now();
+  }
+
   sendAudioChunk(pcm16: Buffer): void {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
 
@@ -219,17 +321,22 @@ export class RealtimeTranscriptionService extends EventEmitter {
    */
   async stop(): Promise<string> {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      this.markStopResolved('not_connected');
       return this.accumulatedTranscripts.join(' ');
     }
 
     // If no audio was sent, skip commit to avoid "buffer too small" error
     if (this.audioChunksSent === 0) {
       console.log('[Realtime] No audio chunks sent, skipping commit');
+      this.markStopResolved('no_audio');
       this.stopping = false;
       return '';
     }
 
     this.stopping = true;
+    this.stopRequestedAt = Date.now();
+    this.stopResolvedAt = null;
+    this.stopResolution = 'waiting';
 
     // Commit any remaining audio in the buffer
     this.ws.send(JSON.stringify({ type: 'input_audio_buffer.commit' }));
@@ -241,6 +348,7 @@ export class RealtimeTranscriptionService extends EventEmitter {
       // Give it up to 3 seconds for the final transcript
       setTimeout(() => {
         if (this.pendingStop === resolve) {
+          this.markStopResolved('timeout');
           console.log('[Realtime] Final transcript timeout, proceeding');
           this.pendingStop = null;
           resolve();
@@ -266,6 +374,7 @@ export class RealtimeTranscriptionService extends EventEmitter {
       this.rejectConnect = null;
     }
     if (this.pendingStop) {
+      this.markStopResolved('disconnect');
       this.pendingStop();
       this.pendingStop = null;
     }

@@ -10,6 +10,7 @@ import type { AppStatus, CursorContext } from '../shared/types';
 import { historyService, dictionaryService } from './service-ipc';
 import { captureCursorContext } from './context-capture';
 import type { RealtimeSessionManager } from './realtime-session-manager';
+import { logDiagnostic, logMessage, type LoggerLevel } from './app-logger';
 
 const START_FAILURE_HIDE_DELAY_MS = 2200;
 const MICROPHONE_SETTINGS_URL = 'x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone';
@@ -197,6 +198,13 @@ export class IPCHandler {
       try {
         const t0 = Date.now();
         const dictionaryWords = dictionaryService.getAllWords();
+        const config = getConfig();
+        logDiagnostic('IPC', 'Realtime start requested', {
+          language: config.language || '(default)',
+          dictionarySize: dictionaryWords.length,
+          enablePolish: config.enablePolish,
+          hasApiKey: Boolean(config.openaiApiKey),
+        });
 
         // Clean up any existing realtime connection
         this.realtimeService?.disconnect();
@@ -251,6 +259,7 @@ export class IPCHandler {
         });
 
         console.log(`[IPC] Realtime session acquired (${Date.now() - t0}ms total)`);
+        logDiagnostic('IPC', 'Realtime service ready', this.realtimeService.getDebugSnapshot());
 
         // Notify renderer that realtime is ready
         this.overlayWindow?.webContents.send(IPC_CHANNELS.REALTIME_STARTED);
@@ -285,16 +294,25 @@ export class IPCHandler {
       const stopInitiatedAt = Date.now();
       this.onRecordingEnded?.();
       this.sendStatus('transcribing');
+      logDiagnostic('IPC', 'Realtime stop requested', this.realtimeService.getDebugSnapshot());
 
       try {
         // Wait for final transcript
         const rawText = await this.realtimeService.stop();
         const flushMs = Date.now() - stopInitiatedAt;
+        const realtimeDebug = this.realtimeService.getDebugSnapshot();
+        logDiagnostic('IPC', 'Realtime stop result', {
+          ...realtimeDebug,
+          flushMs,
+          rawTextLength: rawText.trim().length,
+          rawTextPreview: rawText.slice(0, 300),
+        });
         this.realtimeService.disconnect();
         this.realtimeService = null;
         this.sessionManager?.scheduleReWarm();
 
         if (!rawText?.trim()) {
+          logDiagnostic('IPC', 'No speech detected diagnostics', realtimeDebug);
           this.overlayWindow?.webContents.send(IPC_CHANNELS.TRANSCRIPTION_ERROR, 'No speech detected');
           this.sendStatus('error');
           setTimeout(() => {
@@ -311,6 +329,11 @@ export class IPCHandler {
         // Dictionary hallucination check
         if (dictionaryWords?.length && this.isDictionaryHallucination(rawText, dictionaryWords)) {
           console.warn(`[IPC] Detected dictionary hallucination: "${rawText}"`);
+          logDiagnostic('IPC', 'Dictionary hallucination diagnostics', {
+            rawText,
+            dictionarySize: dictionaryWords.length,
+            realtimeDebug,
+          });
           this.overlayWindow?.webContents.send(IPC_CHANNELS.TRANSCRIPTION_ERROR, 'No speech detected');
           this.sendStatus('error');
           setTimeout(() => {
@@ -384,9 +407,20 @@ export class IPCHandler {
 
     // Renderer diagnostic logging (forward to terminal)
     ipcMain.removeAllListeners(IPC_CHANNELS.RENDERER_LOG);
-    ipcMain.on(IPC_CHANNELS.RENDERER_LOG, (_event, msg: string) => {
-      console.log(`[Renderer] ${msg}`);
-    });
+    ipcMain.on(
+      IPC_CHANNELS.RENDERER_LOG,
+      (_event, payload: { msg?: string; level?: LoggerLevel; source?: string } | string) => {
+        const normalized = typeof payload === 'string'
+          ? { msg: payload, level: 'log' as LoggerLevel, source: 'renderer' }
+          : {
+              msg: payload.msg ?? '',
+              level: payload.level ?? 'log',
+              source: payload.source ?? 'renderer',
+            };
+
+        logMessage(normalized.level, `renderer:${normalized.source}`, normalized.msg);
+      },
+    );
 
     // REALTIME_RESIZE: dynamically resize overlay window
     ipcMain.on(IPC_CHANNELS.REALTIME_RESIZE, (_event, width: number, height: number) => {
